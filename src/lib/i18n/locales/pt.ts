@@ -2,6 +2,8 @@ export const pt = {
   common: {
     comingSoon: 'Em breve',
     back: 'Voltar',
+    cancel: 'Cancelar',
+    done: 'Concluir',
   },
   nav: {
     home: 'Início',
@@ -22,7 +24,25 @@ export const pt = {
   },
   measurements: {
     title: 'Medições',
-    placeholder: 'O histórico e o CRUD de medições ficarão aqui.',
+    add: 'Adicionar medição',
+    empty: 'Nenhuma medição ainda',
+    emptyHint: 'Adicione a primeira leitura do medidor para começar.',
+    cycleEnd: 'Fim de ciclo',
+    consumption: 'Consumo',
+    production: 'Produção',
+    form: {
+      createTitle: 'Nova medição',
+      editTitle: 'Editar medição',
+      date: 'Data',
+      consumption: 'Consumo (kWh)',
+      production: 'Produção (kWh)',
+      endsCycle: 'Encerra o ciclo',
+      save: 'Salvar',
+      delete: 'Excluir',
+      deleteConfirmTitle: 'Excluir medição',
+      deleteConfirmMessage: 'Esta ação não pode ser desfeita.',
+      invalidNumber: 'Informe números válidos para consumo e produção.',
+    },
   },
   reports: {
     title: 'Relatórios',

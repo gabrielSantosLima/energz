@@ -2,6 +2,8 @@ export const en = {
   common: {
     comingSoon: 'Coming Soon',
     back: 'Back',
+    cancel: 'Cancel',
+    done: 'Done',
   },
   nav: {
     home: 'Home',
@@ -22,7 +24,25 @@ export const en = {
   },
   measurements: {
     title: 'Measurements',
-    placeholder: 'Measurement history and CRUD will live here.',
+    add: 'Add measurement',
+    empty: 'No measurements yet',
+    emptyHint: 'Add your first meter reading to start tracking.',
+    cycleEnd: 'Cycle end',
+    consumption: 'Consumption',
+    production: 'Production',
+    form: {
+      createTitle: 'New measurement',
+      editTitle: 'Edit measurement',
+      date: 'Date',
+      consumption: 'Consumption (kWh)',
+      production: 'Production (kWh)',
+      endsCycle: 'Ends cycle',
+      save: 'Save',
+      delete: 'Delete',
+      deleteConfirmTitle: 'Delete measurement',
+      deleteConfirmMessage: 'This action cannot be undone.',
+      invalidNumber: 'Enter valid numbers for consumption and production.',
+    },
   },
   reports: {
     title: 'Reports',
