@@ -17,6 +17,8 @@ export const en = {
     consumption: 'Consumption',
     production: 'Production',
     emptyHint: 'Add your first measurement to see your metrics.',
+    chartTitle: 'Consumption vs production',
+    chartEmpty: 'Add more measurements to see the chart.',
     features: {
       measurements: 'Measurements',
       reports: 'Reports',

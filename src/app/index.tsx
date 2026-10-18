@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CycleSelector } from '@/components/cycles/cycle-selector';
+import { CycleChart } from '@/components/dashboard/cycle-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { MetricCardSkeleton } from '@/components/dashboard/metric-card-skeleton';
 import { Button } from '@/components/ui/button';
@@ -232,6 +233,12 @@ export default function DashboardScreen() {
           );
         })}
       </View>
+
+      <CycleChart
+        key={selected?.id ?? 'none'}
+        cycle={selected}
+        measurements={measurements}
+      />
     </Screen>
   );
 }
