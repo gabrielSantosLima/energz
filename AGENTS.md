@@ -1,5 +1,88 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## Tech Stack
+
+- Expo SDK 57 + React Native + TypeScript (Expo Router for navigation).
+- State: Zustand (global) + React Context (DI, theme, session).
+- DI: tsyringe + reflect-metadata (see Dependency injection).
+- Persistence: expo-sqlite (energy records), expo-secure-store (secrets), AsyncStorage (preferences).
+- UI: Inter via @expo-google-fonts/inter, expo-symbols, expo-image, react-native-reanimated.
+
+## Architecture
+
+Layered, mobile-first. Dependencies point inward in a single direction:
+
+```
+entities  <-  services  <-  useCases  <-  hooks / contexts / app / components
+```
+
+Structure:
+
+```
+src/
+  app/                 Expo Router routes (screens + layouts). Navigation only.
+  domain/
+    entities/          Pure domain models. No React, no I/O.
+    services/          Concrete I/O: expo-sqlite, SecureStore, AsyncStorage, device, future inverter API.
+    useCases/          One class per action with an execute() method.
+  store/               Zustand stores (global state).
+  contexts/            React Context: DI container, session, shared UI.
+  hooks/               Reusable hooks that call use cases.
+  components/
+    ui/                Design-system primitives.
+    <feature>/         Feature components.
+  theme/               Design tokens (single source of truth).
+  lib/                 Utilities, formatters, constants.
+```
+
+Layer rules:
+
+- entities: plain data plus domain behavior; no imports from services, useCases,
+  store, contexts or components, and no I/O modules.
+- services: one responsibility each; receive configuration through the
+  constructor; never imported by screens or components.
+- useCases: one class, one action, `execute()`; dependencies injected via the
+  constructor; orchestrate services + entities and contain no I/O of their own.
+- hooks: reusable across features; resolve and call use cases.
+- contexts: DI container, session and shared UI only, not domain data.
+- store: Zustand for high-frequency global state.
+- app/ and components/: may use hooks and use cases, never services directly.
+- theme/: the only place colors, spacing, radius, typography and motion are
+  defined; screens and components consume tokens and never hardcode values.
+
+Dependency injection:
+
+- tsyringe with reflect-metadata. Register services and use cases in the
+  composition root (`contexts/container.ts`) and resolve them from hooks/contexts.
+- Required setup: `experimentalDecorators` and `emitDecoratorMetadata` in
+  tsconfig.json, `babel-plugin-transform-typescript-metadata` in the Babel
+  config, and `import 'reflect-metadata'` once at the app entry.
+
+Error handling:
+
+- Use cases throw typed errors; hooks and screens catch them and map them to UI
+  states. No silent failures.
+
+Data sources:
+
+- Energy records start as user-provided CRUD persisted in expo-sqlite. A future
+  inverter integration is added as a new service bound in the composition root,
+  without changing screens or components.
+
+Mobile rules:
+
+- Style everything with `src/theme` tokens.
+- Long lists use FlashList; images use expo-image; animation uses Reanimated.
+- Respect safe areas, keyboard handling and `Platform.select`.
+- Accessibility: WCAG AA contrast, 44x44 touch targets, labels on icon-only
+  controls.
+- Prefer Expo modules over third-party libraries; never edit the generated
+  `ios/` and `android/` folders (CNG).
+
+Testing:
+
+- Test setup comes later. When added, prioritize use cases.
+
 ## Language rules
 
 - All code, identifiers, comments, commit messages, UI labels and user-facing strings MUST be written in English.
