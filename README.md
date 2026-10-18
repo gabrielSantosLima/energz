@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="assets/images/logo.png" alt="energz" width="200" />
+
 # energz
 
 A mobile app for managing solar energy production versus household energy consumption.
@@ -6,6 +10,8 @@ A mobile app for managing solar energy production versus household energy consum
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
+
+</div>
 
 ## License
 

@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="assets/images/logo.png" alt="energz" width="200" />
+
 # energz
 
 Una app móvil para gestionar la producción de energía solar frente al consumo de energía del hogar.
@@ -6,6 +10,8 @@ Una app móvil para gestionar la producción de energía solar frente al consumo
 [![Licencia: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
+
+</div>
 
 ## Licencia
 
