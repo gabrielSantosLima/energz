@@ -1,12 +1,16 @@
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { CycleSelector } from '@/components/cycles/cycle-selector';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
-import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
+import { buildIntervals } from '@/domain/entities/measurement';
+import { useCycles } from '@/hooks/use-cycles';
+import { useMeasurements } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
@@ -22,7 +26,62 @@ type Feature = {
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const { summary, loading, refreshing, refresh } = useDashboardSummary();
+  const {
+    cycles,
+    loading: cyclesLoading,
+    refreshing: cyclesRefreshing,
+    refresh: refreshCycles,
+  } = useCycles();
+  const {
+    measurements,
+    loading: measurementsLoading,
+    refreshing: measurementsRefreshing,
+    refresh: refreshMeasurements,
+  } = useMeasurements();
+  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+
+  const loading = cyclesLoading || measurementsLoading;
+  const refreshing = cyclesRefreshing || measurementsRefreshing;
+
+  const refresh = useCallback(() => {
+    void refreshCycles();
+    void refreshMeasurements();
+  }, [refreshCycles, refreshMeasurements]);
+
+  const currentCycle =
+    cycles.find((cycle) => !cycle.closed) ?? cycles[cycles.length - 1] ?? null;
+  const selectedIndex = cycles.findIndex(
+    (cycle) => cycle.id === (selectedCycleId ?? currentCycle?.id),
+  );
+  const selected = selectedIndex >= 0 ? cycles[selectedIndex] : null;
+
+  const intervals = buildIntervals(measurements);
+  let lastIntervalIndex = -1;
+
+  if (selected) {
+    const startTime = selected.start.measuredAt.getTime();
+    const endTime = selected.end.measuredAt.getTime();
+
+    for (let index = 0; index < intervals.length; index += 1) {
+      const time = intervals[index].to.measuredAt.getTime();
+      if (time >= startTime && time <= endTime) {
+        lastIntervalIndex = index;
+      }
+    }
+  }
+
+  const lastInterval = lastIntervalIndex >= 0 ? intervals[lastIntervalIndex] : null;
+  const previousInterval =
+    lastIntervalIndex > 0 ? intervals[lastIntervalIndex - 1] : null;
+
+  const consumptionTrend =
+    lastInterval && previousInterval
+      ? lastInterval.consumption - previousInterval.consumption
+      : null;
+  const productionTrend =
+    lastInterval && previousInterval
+      ? lastInterval.production - previousInterval.production
+      : null;
 
   const features: Feature[] = [
     {
@@ -66,6 +125,12 @@ export default function DashboardScreen() {
         </Text>
       </View>
 
+      <CycleSelector
+        cycles={cycles}
+        selectedId={selected?.id ?? null}
+        onSelect={setSelectedCycleId}
+      />
+
       {loading ? (
         <View style={styles.metricsLoading}>
           <ActivityIndicator color={colors.primary} />
@@ -74,20 +139,22 @@ export default function DashboardScreen() {
         <View style={styles.metricsRow}>
           <MetricCard
             label={t('dashboard.consumption')}
-            value={summary?.consumption.value ?? 0}
-            trend={summary?.consumption.trend ?? null}
+            value={selected?.consumption ?? 0}
+            trend={consumptionTrend}
             accent={colors.primary}
+            higherIsBetter={false}
           />
           <MetricCard
             label={t('dashboard.production')}
-            value={summary?.production.value ?? 0}
-            trend={summary?.production.trend ?? null}
+            value={selected?.production ?? 0}
+            trend={productionTrend}
             accent={colors.accent}
+            higherIsBetter
           />
         </View>
       )}
 
-      {!loading && summary && !summary.hasData ? (
+      {!loading && cycles.length === 0 ? (
         <View
           style={[
             styles.emptyCard,
@@ -161,7 +228,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   header: {
     gap: spacing.xs,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   metricsRow: {
     flexDirection: 'row',

@@ -7,7 +7,6 @@ import { MeasurementRepository } from '@/domain/services/measurement-repository'
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
 import { ListCyclesUseCase } from '@/domain/useCases/cycles/list-cycles';
-import { GetDashboardSummaryUseCase } from '@/domain/useCases/dashboard/get-dashboard-summary';
 import { CreateMeasurementUseCase } from '@/domain/useCases/measurements/create-measurement';
 import { DeleteMeasurementUseCase } from '@/domain/useCases/measurements/delete-measurement';
 import { GetMeasurementUseCase } from '@/domain/useCases/measurements/get-measurement';
@@ -33,7 +32,5 @@ container.registerSingleton(DeleteMeasurementUseCase);
 
 container.registerSingleton(ListCyclesUseCase);
 container.registerSingleton(GetCycleDetailUseCase);
-
-container.registerSingleton(GetDashboardSummaryUseCase);
 
 export { container };

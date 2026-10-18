@@ -12,6 +12,7 @@ type Props = {
   value: number;
   trend: number | null;
   accent: string;
+  higherIsBetter: boolean;
 };
 
 const ARROW_UP: SymbolViewProps['name'] = {
@@ -26,12 +27,29 @@ const ARROW_DOWN: SymbolViewProps['name'] = {
   web: 'trending_down',
 };
 
-export function MetricCard({ label, value, trend, accent }: Props) {
+export function MetricCard({
+  label,
+  value,
+  trend,
+  accent,
+  higherIsBetter,
+}: Props) {
   const { colors } = useTheme();
-  const { t, locale } = useTranslation();
+  const { locale } = useTranslation();
 
-  const hasTrend = trend !== null && trend !== 0;
-  const direction = hasTrend ? (trend > 0 ? 'up' : 'down') : 'flat';
+  const isUp = trend !== null && trend > 0;
+  const isDown = trend !== null && trend < 0;
+  const direction = isUp ? 'up' : isDown ? 'down' : 'flat';
+
+  const trendColor = isUp
+    ? higherIsBetter
+      ? colors.success
+      : colors.danger
+    : isDown
+      ? higherIsBetter
+        ? colors.danger
+        : colors.success
+      : colors.textSecondary;
 
   return (
     <View
@@ -58,22 +76,23 @@ export function MetricCard({ label, value, trend, accent }: Props) {
         </Text>
       </View>
 
-      {hasTrend ? (
+      {trend !== null ? (
         <View style={styles.trendRow}>
-          <SymbolView
-            name={direction === 'up' ? ARROW_UP : ARROW_DOWN}
-            size={14}
-            tintColor={colors.textSecondary}
-          />
-          <Text variant="caption" color="textSecondary" numberOfLines={1}>
-            {`${trend > 0 ? '+' : ''}${formatNumber(trend, locale)} kWh ${t('dashboard.vsPrevious')}`}
+          {direction !== 'flat' ? (
+            <SymbolView
+              name={direction === 'up' ? ARROW_UP : ARROW_DOWN}
+              size={14}
+              tintColor={trendColor}
+            />
+          ) : null}
+          <Text
+            variant="caption"
+            numberOfLines={1}
+            style={{ color: trendColor }}>
+            {`${trend > 0 ? '+' : ''}${formatNumber(trend, locale)} kWh`}
           </Text>
         </View>
-      ) : (
-        <Text variant="caption" color="textTertiary" numberOfLines={1}>
-          {t('dashboard.noComparison')}
-        </Text>
-      )}
+      ) : null}
     </View>
   );
 }
