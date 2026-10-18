@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useCallback, useState } from 'react';
@@ -119,7 +120,12 @@ export default function DashboardScreen() {
   return (
     <Screen scroll refreshing={refreshing} onRefresh={refresh}>
       <View style={styles.header}>
-        <Text variant="title">{t('dashboard.title')}</Text>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logo}
+          contentFit="contain"
+          accessibilityLabel={t('dashboard.title')}
+        />
         <Text variant="body" color="textSecondary">
           {t('dashboard.subtitle')}
         </Text>
@@ -227,8 +233,13 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    gap: spacing.xs,
+    gap: spacing.sm,
     marginBottom: spacing.lg,
+  },
+  logo: {
+    width: 150,
+    height: 100,
+    alignSelf: 'flex-start',
   },
   metricsRow: {
     flexDirection: 'row',
