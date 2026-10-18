@@ -1,14 +1,15 @@
-import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { spacing, typography } from '@/theme';
 
 export default function HomeScreen() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const { colors } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Hello World</Text>
+      <Text style={[typography.caption, { color: colors.textTertiary }]}>energz</Text>
+      <Text style={[typography.display, { color: colors.textPrimary }]}>Hello World</Text>
     </View>
   );
 }
@@ -18,9 +19,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
+    gap: spacing.sm,
   },
 });
