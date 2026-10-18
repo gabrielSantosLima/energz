@@ -38,6 +38,9 @@ yarn-error.*
 
 example
 
+# local planning
+PLAN.md
+
 # generated native folders
 /ios
 /android
