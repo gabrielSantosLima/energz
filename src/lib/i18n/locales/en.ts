@@ -4,6 +4,8 @@ export const en = {
     back: 'Back',
     cancel: 'Cancel',
     done: 'Done',
+    delete: 'Delete',
+    selected: '{{count}} selected',
   },
   nav: {
     home: 'Home',
@@ -75,6 +77,8 @@ export const en = {
     start: 'Start',
     end: 'End',
     readings: 'Readings',
+    deleteConfirmTitle: 'Delete cycles',
+    deleteConfirmMessage: 'This deletes the measurements of the selected cycles.',
   },
   bills: {
     title: 'Analyze energy bills',

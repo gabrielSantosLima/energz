@@ -2,12 +2,14 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import type { Cycle } from '@/domain/entities/cycle';
+import { DeleteCyclesUseCase } from '@/domain/useCases/cycles/delete-cycles';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
 import { ListCyclesUseCase } from '@/domain/useCases/cycles/list-cycles';
 import { useInjection } from '@/hooks/use-injection';
 
 export function useCycles() {
   const list = useInjection(ListCyclesUseCase);
+  const removeCycles = useInjection(DeleteCyclesUseCase);
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -40,7 +42,15 @@ export function useCycles() {
     }
   }, [reload]);
 
-  return { cycles, loading, refreshing, error, refresh };
+  const deleteCycles = useCallback(
+    async (ids: string[]) => {
+      await removeCycles.execute(ids);
+      await reload();
+    },
+    [removeCycles, reload],
+  );
+
+  return { cycles, loading, refreshing, error, refresh, deleteCycles };
 }
 
 export function useCycleDetail(id: string | undefined) {

@@ -7,10 +7,12 @@ import { ImageCapturer } from '@/domain/services/image-capturer';
 import { MeasurementRepository } from '@/domain/services/measurement-repository';
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { ReportExporter } from '@/domain/services/report-exporter';
+import { DeleteCyclesUseCase } from '@/domain/useCases/cycles/delete-cycles';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
 import { ListCyclesUseCase } from '@/domain/useCases/cycles/list-cycles';
 import { CreateMeasurementUseCase } from '@/domain/useCases/measurements/create-measurement';
 import { DeleteMeasurementUseCase } from '@/domain/useCases/measurements/delete-measurement';
+import { DeleteMeasurementsUseCase } from '@/domain/useCases/measurements/delete-measurements';
 import { GetMeasurementUseCase } from '@/domain/useCases/measurements/get-measurement';
 import { ListMeasurementsUseCase } from '@/domain/useCases/measurements/list-measurements';
 import { UpdateMeasurementUseCase } from '@/domain/useCases/measurements/update-measurement';
@@ -37,9 +39,11 @@ container.registerSingleton(GetMeasurementUseCase);
 container.registerSingleton(CreateMeasurementUseCase);
 container.registerSingleton(UpdateMeasurementUseCase);
 container.registerSingleton(DeleteMeasurementUseCase);
+container.registerSingleton(DeleteMeasurementsUseCase);
 
 container.registerSingleton(ListCyclesUseCase);
 container.registerSingleton(GetCycleDetailUseCase);
+container.registerSingleton(DeleteCyclesUseCase);
 
 container.registerSingleton(GenerateReportUseCase);
 container.registerSingleton(CaptureImageUseCase);

@@ -4,6 +4,8 @@ export const pt = {
     back: 'Voltar',
     cancel: 'Cancelar',
     done: 'Concluir',
+    delete: 'Excluir',
+    selected: '{{count}} selecionados',
   },
   nav: {
     home: 'Início',
@@ -75,6 +77,8 @@ export const pt = {
     start: 'Início',
     end: 'Fim',
     readings: 'Leituras',
+    deleteConfirmTitle: 'Excluir ciclos',
+    deleteConfirmMessage: 'Isso exclui as medições dos ciclos selecionados.',
   },
   bills: {
     title: 'Analisar contas de energia',

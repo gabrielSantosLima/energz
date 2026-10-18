@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import type { Measurement, MeasurementInput } from '@/domain/entities/measurement';
 import { CreateMeasurementUseCase } from '@/domain/useCases/measurements/create-measurement';
 import { DeleteMeasurementUseCase } from '@/domain/useCases/measurements/delete-measurement';
+import { DeleteMeasurementsUseCase } from '@/domain/useCases/measurements/delete-measurements';
 import { GetMeasurementUseCase } from '@/domain/useCases/measurements/get-measurement';
 import { ListMeasurementsUseCase } from '@/domain/useCases/measurements/list-measurements';
 import {
@@ -53,6 +54,7 @@ export function useMeasurementActions() {
   const create = useInjection(CreateMeasurementUseCase);
   const update = useInjection(UpdateMeasurementUseCase);
   const remove = useInjection(DeleteMeasurementUseCase);
+  const removeMany = useInjection(DeleteMeasurementsUseCase);
 
   const createMeasurement = useCallback(
     (input: MeasurementInput) => create.execute(input),
@@ -69,7 +71,17 @@ export function useMeasurementActions() {
     [remove],
   );
 
-  return { createMeasurement, updateMeasurement, deleteMeasurement };
+  const deleteMeasurements = useCallback(
+    (ids: string[]) => removeMany.execute(ids),
+    [removeMany],
+  );
+
+  return {
+    createMeasurement,
+    updateMeasurement,
+    deleteMeasurement,
+    deleteMeasurements,
+  };
 }
 
 export function useMeasurement(id: string | undefined) {
