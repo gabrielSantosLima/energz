@@ -1,9 +1,12 @@
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { MetricCard } from '@/components/dashboard/metric-card';
+import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
+import { useDashboardSummary } from '@/hooks/use-dashboard-summary';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
@@ -19,6 +22,7 @@ type Feature = {
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { summary, loading, refreshing, refresh } = useDashboardSummary();
 
   const features: Feature[] = [
     {
@@ -54,7 +58,7 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <Screen scroll>
+    <Screen scroll refreshing={refreshing} onRefresh={refresh}>
       <View style={styles.header}>
         <Text variant="title">{t('dashboard.title')}</Text>
         <Text variant="body" color="textSecondary">
@@ -62,7 +66,48 @@ export default function DashboardScreen() {
         </Text>
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      {loading ? (
+        <View style={styles.metricsLoading}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      ) : (
+        <View style={styles.metricsRow}>
+          <MetricCard
+            label={t('dashboard.consumption')}
+            value={summary?.consumption.value ?? 0}
+            trend={summary?.consumption.trend ?? null}
+            accent={colors.primary}
+          />
+          <MetricCard
+            label={t('dashboard.production')}
+            value={summary?.production.value ?? 0}
+            trend={summary?.production.trend ?? null}
+            accent={colors.accent}
+          />
+        </View>
+      )}
+
+      {!loading && summary && !summary.hasData ? (
+        <View
+          style={[
+            styles.emptyCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
+          <Text variant="body" color="textSecondary">
+            {t('dashboard.emptyHint')}
+          </Text>
+          <Button
+            label={t('measurements.add')}
+            onPress={() => router.push('/measurement')}
+          />
+        </View>
+      ) : null}
+
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}>
         {features.map((feature, index) => {
           const disabled = !feature.href;
           const tint = disabled ? colors.textTertiary : colors.primary;
@@ -76,7 +121,10 @@ export default function DashboardScreen() {
               onPress={feature.href ? () => router.push(feature.href as Href) : undefined}
               style={[
                 styles.row,
-                index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+                index > 0 && {
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: colors.border,
+                },
               ]}>
               <View style={[styles.iconBox, { backgroundColor: colors.surfaceMuted }]}>
                 <SymbolView name={feature.icon} size={20} tintColor={tint} />
@@ -113,6 +161,24 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   header: {
     gap: spacing.xs,
+    marginBottom: spacing.xl,
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  metricsLoading: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
+  emptyCard: {
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing.lg,
+    gap: spacing.md,
     marginBottom: spacing.xl,
   },
   card: {

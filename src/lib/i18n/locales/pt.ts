@@ -14,6 +14,11 @@ export const pt = {
   dashboard: {
     title: 'energz',
     subtitle: 'Produção solar vs. consumo',
+    consumption: 'Consumo',
+    production: 'Produção',
+    vsPrevious: 'vs anterior',
+    noComparison: 'Sem leitura anterior',
+    emptyHint: 'Adicione sua primeira medição para ver as métricas.',
     features: {
       measurements: 'Medições',
       reports: 'Relatórios',
