@@ -7,7 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "energz",
     "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.gabrielsantoslima.energz"
+    },
     "android": {
+      "package": "com.gabrielsantoslima.energz",
       "adaptiveIcon": {
         "backgroundColor": "#060915",
         "foregroundImage": "./assets/images/adaptive-icon.png"
