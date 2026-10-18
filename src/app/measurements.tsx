@@ -16,7 +16,7 @@ import { radius, spacing } from '@/theme';
 export default function MeasurementsScreen() {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
-  const { measurements, loading, error } = useMeasurements();
+  const { measurements, loading, refreshing, error, refresh } = useMeasurements();
 
   const openNew = () => router.push('/measurement');
   const openMeasurement = (id: string) =>
@@ -100,6 +100,8 @@ export default function MeasurementsScreen() {
           renderItem={renderItem}
           style={styles.list}
           contentContainerStyle={styles.listContent}
+          refreshing={refreshing}
+          onRefresh={refresh}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}

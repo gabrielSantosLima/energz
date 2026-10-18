@@ -16,6 +16,7 @@ export function useMeasurements() {
   const list = useInjection(ListMeasurementsUseCase);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -36,7 +37,16 @@ export function useMeasurements() {
     }, [reload]),
   );
 
-  return { measurements, loading, error, reload };
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [reload]);
+
+  return { measurements, loading, refreshing, error, reload, refresh };
 }
 
 export function useMeasurementActions() {

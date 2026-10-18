@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/hooks/use-theme';
@@ -10,9 +10,11 @@ const PILL_SPACE = 104;
 type Props = {
   children: ReactNode;
   scroll?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 };
 
-export function Screen({ children, scroll = false }: Props) {
+export function Screen({ children, scroll = false, refreshing, onRefresh }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -27,7 +29,17 @@ export function Screen({ children, scroll = false }: Props) {
       <ScrollView
         style={[styles.flex, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.grow, padding]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing ?? false}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          ) : undefined
+        }>
         {children}
       </ScrollView>
     );
