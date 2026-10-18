@@ -90,6 +90,7 @@ export const en = {
   },
   settings: {
     title: 'Settings',
+    version: 'Version',
     theme: {
       label: 'Theme',
       system: 'System',

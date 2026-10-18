@@ -90,6 +90,7 @@ export const pt = {
   },
   settings: {
     title: 'Configurações',
+    version: 'Versão',
     theme: {
       label: 'Tema',
       system: 'Sistema',

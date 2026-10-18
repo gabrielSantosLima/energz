@@ -4,10 +4,13 @@ import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Text } from '@/components/ui/text';
 import { usePreferences } from '@/hooks/use-preferences';
+import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { spacing } from '@/theme';
+import { APP_VERSION } from '@/lib/app-version';
+import { radius, spacing } from '@/theme';
 
 export default function SettingsScreen() {
+  const { colors } = useTheme();
   const { t } = useTranslation();
   const { theme, locale, setTheme, setLocale } = usePreferences();
 
@@ -43,6 +46,19 @@ export default function SettingsScreen() {
           ]}
         />
       </View>
+
+      <View style={styles.section}>
+        <Text variant="label" color="textSecondary">
+          {t('settings.version')}
+        </Text>
+        <View
+          style={[
+            styles.value,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
+          <Text variant="body">{APP_VERSION}</Text>
+        </View>
+      </View>
     </Screen>
   );
 }
@@ -51,5 +67,11 @@ const styles = StyleSheet.create({
   section: {
     marginTop: spacing.xl,
     gap: spacing.sm,
+  },
+  value: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
 });
