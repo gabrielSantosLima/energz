@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import {
   Inter_400Regular,
   Inter_500Medium,
