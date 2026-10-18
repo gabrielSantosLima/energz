@@ -7,7 +7,11 @@ export default function BillsScreen() {
 
   return (
     <Screen>
-      <ComingSoon title={t('bills.title')} message={t('bills.message')} />
+      <ComingSoon
+        title={t('bills.title')}
+        message={t('bills.message')}
+        icon={{ ios: 'bolt', android: 'bolt', web: 'bolt' }}
+      />
     </Screen>
   );
 }

@@ -7,7 +7,11 @@ export default function AgentScreen() {
 
   return (
     <Screen>
-      <ComingSoon title={t('agent.title')} message={t('agent.message')} />
+      <ComingSoon
+        title={t('agent.title')}
+        message={t('agent.message')}
+        icon={{ ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' }}
+      />
     </Screen>
   );
 }
