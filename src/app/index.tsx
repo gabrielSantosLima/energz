@@ -126,9 +126,12 @@ export default function DashboardScreen() {
           contentFit="contain"
           accessibilityLabel={t('dashboard.title')}
         />
-        <Text variant="body" color="textSecondary">
-          {t('dashboard.subtitle')}
-        </Text>
+        <View style={styles.headerText}>
+          <Text variant="title">{t('dashboard.title')}</Text>
+          <Text variant="caption" color="textSecondary">
+            {t('dashboard.subtitle')}
+          </Text>
+        </View>
       </View>
 
       <CycleSelector
@@ -233,13 +236,18 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
     marginBottom: spacing.lg,
   },
   logo: {
-    width: 150,
-    height: 100,
-    alignSelf: 'flex-start',
+    width: 44,
+    height: 44,
+  },
+  headerText: {
+    flex: 1,
+    gap: spacing.xs,
   },
   metricsRow: {
     flexDirection: 'row',

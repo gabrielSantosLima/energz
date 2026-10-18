@@ -13,7 +13,7 @@ export const en = {
   },
   dashboard: {
     title: 'energz',
-    subtitle: 'Solar production vs. consumption',
+    subtitle: 'Track solar production and consumption.',
     consumption: 'Consumption',
     production: 'Production',
     emptyHint: 'Add your first measurement to see your metrics.',
