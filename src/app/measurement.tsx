@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { DateField } from '@/components/ui/date-field';
 import { Screen } from '@/components/ui/screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { TextInput } from '@/components/ui/text-input';
 import type { Measurement } from '@/domain/entities/measurement';
@@ -217,8 +217,11 @@ export default function MeasurementFormScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} />
+        <View style={styles.form}>
+          <Skeleton height={72} />
+          <Skeleton height={72} />
+          <Skeleton height={72} />
+          <Skeleton height={52} round={radius.lg} />
         </View>
       ) : (
         <MeasurementForm
@@ -254,10 +257,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

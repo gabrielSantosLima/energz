@@ -2,10 +2,11 @@ import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CycleSelector } from '@/components/cycles/cycle-selector';
 import { MetricCard } from '@/components/dashboard/metric-card';
+import { MetricCardSkeleton } from '@/components/dashboard/metric-card-skeleton';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
@@ -141,8 +142,9 @@ export default function DashboardScreen() {
       />
 
       {loading ? (
-        <View style={styles.metricsLoading}>
-          <ActivityIndicator color={colors.primary} />
+        <View style={styles.metricsRow}>
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
         </View>
       ) : (
         <View style={styles.metricsRow}>
@@ -252,12 +254,6 @@ const styles = StyleSheet.create({
   metricsRow: {
     flexDirection: 'row',
     gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  metricsLoading: {
-    height: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: spacing.xl,
   },
   emptyCard: {

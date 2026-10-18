@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import type { Cycle } from '@/domain/entities/cycle';
 import { useCycles } from '@/hooks/use-cycles';
@@ -95,9 +96,7 @@ export default function CyclesScreen() {
           {error}
         </Text>
       ) : loading && cycles.length === 0 ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} />
-        </View>
+        <SkeletonList />
       ) : cycles.length === 0 ? (
         <View style={styles.center}>
           <Text variant="heading">{t('cycles.empty')}</Text>

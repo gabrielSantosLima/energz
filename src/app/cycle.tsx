@@ -1,8 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/ui/screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useCycleDetail } from '@/hooks/use-cycles';
 import { useTheme } from '@/hooks/use-theme';
@@ -105,8 +106,13 @@ export default function CycleDetailScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} />
+        <View style={styles.skeleton}>
+          <Skeleton height={128} round={radius.xl} />
+          <View style={styles.statsRow}>
+            <Skeleton height={88} round={radius.xl} style={styles.flex} />
+            <Skeleton height={88} round={radius.xl} style={styles.flex} />
+          </View>
+          <Skeleton height={160} round={radius.xl} />
         </View>
       ) : !cycle ? (
         <View style={styles.center}>
@@ -247,4 +253,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing['3xl'],
   },
+  skeleton: {
+    gap: spacing.lg,
+  },
+  flex: { flex: 1 },
 });

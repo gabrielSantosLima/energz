@@ -1,10 +1,11 @@
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import type { Measurement } from '@/domain/entities/measurement';
 import { useMeasurements } from '@/hooks/use-measurements';
@@ -76,9 +77,7 @@ export default function MeasurementsScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} />
-        </View>
+        <SkeletonList />
       ) : error ? (
         <View style={styles.center}>
           <Text variant="body" color="danger">
