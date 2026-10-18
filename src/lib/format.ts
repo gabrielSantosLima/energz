@@ -13,6 +13,16 @@ export function formatDate(date: Date, locale: Locale): string {
   }).format(date);
 }
 
+const shortMonths: Record<Locale, string[]> = {
+  en: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+  pt: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+};
+
+export function formatShortDate(date: Date, locale: Locale): string {
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${day}/${shortMonths[locale][date.getMonth()]}`;
+}
+
 export function formatNumber(
   value: number,
   locale: Locale,

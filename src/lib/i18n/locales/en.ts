@@ -16,8 +16,6 @@ export const en = {
     subtitle: 'Solar production vs. consumption',
     consumption: 'Consumption',
     production: 'Production',
-    vsPrevious: 'vs previous',
-    noComparison: 'No previous reading',
     emptyHint: 'Add your first measurement to see your metrics.',
     features: {
       measurements: 'Measurements',
@@ -55,7 +53,18 @@ export const en = {
   },
   cycles: {
     title: 'My cycles',
-    placeholder: 'Measurement cycles will be listed here.',
+    tag: 'Cycle {{n}} - {{date}}',
+    currentChip: 'Current',
+    current: 'Current cycle',
+    closed: 'Closed',
+    empty: 'No cycles yet',
+    emptyHint: 'Add measurements to build your cycles.',
+    production: 'Production',
+    consumption: 'Consumption',
+    balance: 'Balance',
+    start: 'Start',
+    end: 'End',
+    readings: 'Readings',
   },
   bills: {
     title: 'Analyze energy bills',
