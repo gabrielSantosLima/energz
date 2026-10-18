@@ -1,23 +1,55 @@
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { Select } from '@/components/ui/select';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import type { Measurement } from '@/domain/entities/measurement';
+import { useCycles } from '@/hooks/use-cycles';
 import { useMeasurements } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDate, formatEnergy } from '@/lib/format';
+import { formatDate, formatEnergy, formatShortDate } from '@/lib/format';
 import { radius, spacing } from '@/theme';
 
 export default function MeasurementsScreen() {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
   const { measurements, loading, refreshing, error, refresh } = useMeasurements();
+  const { cycles } = useCycles();
+  const [cycleFilter, setCycleFilter] = useState('all');
+
+  const cycleOptions = useMemo(
+    () => [
+      { value: 'all', label: t('measurements.allCycles') },
+      ...cycles.map((cycle, index) => ({
+        value: cycle.id,
+        label: cycle.closed
+          ? t('cycles.tag', {
+              n: index + 1,
+              date: formatShortDate(cycle.end.measuredAt, locale),
+            })
+          : t('cycles.currentChip'),
+      })),
+    ],
+    [cycles, t, locale],
+  );
+
+  const selectedCycle = cycles.find((cycle) => cycle.id === cycleFilter) ?? null;
+  const visible = selectedCycle
+    ? measurements.filter(
+        (measurement) =>
+          measurement.measuredAt.getTime() >=
+            selectedCycle.start.measuredAt.getTime() &&
+          measurement.measuredAt.getTime() <=
+            selectedCycle.end.measuredAt.getTime(),
+      )
+    : measurements;
 
   const openNew = () => router.push('/measurement');
   const openMeasurement = (id: string) =>
@@ -76,6 +108,16 @@ export default function MeasurementsScreen() {
         </Pressable>
       </View>
 
+      {cycles.length > 0 ? (
+        <View style={styles.filter}>
+          <Select
+            options={cycleOptions}
+            value={cycleFilter}
+            onChange={setCycleFilter}
+          />
+        </View>
+      ) : null}
+
       {loading ? (
         <SkeletonList />
       ) : error ? (
@@ -84,7 +126,7 @@ export default function MeasurementsScreen() {
             {error}
           </Text>
         </View>
-      ) : measurements.length === 0 ? (
+      ) : visible.length === 0 ? (
         <View style={styles.center}>
           <Text variant="heading">{t('measurements.empty')}</Text>
           <Text variant="body" color="textSecondary" style={styles.centerText}>
@@ -94,7 +136,7 @@ export default function MeasurementsScreen() {
         </View>
       ) : (
         <FlashList
-          data={measurements}
+          data={visible}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           style={styles.list}
@@ -121,6 +163,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  filter: {
+    marginBottom: spacing.lg,
   },
   list: { flex: 1 },
   listContent: { paddingBottom: spacing.lg },
