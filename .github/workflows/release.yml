@@ -109,3 +109,11 @@ jobs:
             --title "v$VERSION" \
             --notes-file NOTES.md \
             $PRERELEASE
+
+  build:
+    needs: release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/build.yml
+    with:
+      tag: v${{ needs.release.outputs.version }}
