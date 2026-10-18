@@ -1,0 +1,51 @@
+export interface Measurement {
+  id: string;
+  measuredAt: Date;
+  consumption: number;
+  production: number;
+  endsCycle: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type MeasurementInput = {
+  measuredAt: Date;
+  consumption: number;
+  production: number;
+  endsCycle: boolean;
+};
+
+export interface MeasurementInterval {
+  from: Measurement;
+  to: Measurement;
+  consumption: number;
+  production: number;
+}
+
+export function sortMeasurements(measurements: Measurement[]): Measurement[] {
+  return [...measurements].sort(
+    (a, b) => a.measuredAt.getTime() - b.measuredAt.getTime(),
+  );
+}
+
+export function computeInterval(
+  from: Measurement,
+  to: Measurement,
+): MeasurementInterval {
+  return {
+    from,
+    to,
+    consumption: Math.max(0, to.consumption - from.consumption),
+    production: Math.max(0, to.production - from.production),
+  };
+}
+
+export function buildIntervals(sorted: Measurement[]): MeasurementInterval[] {
+  const intervals: MeasurementInterval[] = [];
+
+  for (let index = 1; index < sorted.length; index += 1) {
+    intervals.push(computeInterval(sorted[index - 1], sorted[index]));
+  }
+
+  return intervals;
+}
