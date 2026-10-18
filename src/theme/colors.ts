@@ -71,6 +71,11 @@ export const darkColors: ThemeColors = {
   info: '#3B8BFF',
 };
 
+export type Theme = {
+  isDark: boolean;
+  colors: ThemeColors;
+};
+
 export const dataViz = {
   production: ['#FEB317', '#FF8A00'],
   consumption: ['#0A6BFE', '#0982FC'],

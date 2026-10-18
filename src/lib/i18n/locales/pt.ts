@@ -32,6 +32,7 @@ export const pt = {
     add: 'Adicionar medição',
     empty: 'Nenhuma medição ainda',
     emptyHint: 'Adicione a primeira leitura do medidor para começar.',
+    allCycles: 'Todos os ciclos',
     cycleEnd: 'Fim de ciclo',
     consumption: 'Consumo',
     production: 'Produção',
@@ -51,7 +52,14 @@ export const pt = {
   },
   reports: {
     title: 'Relatórios',
-    placeholder: 'O gerador de relatórios e a exportação ficarão aqui.',
+    period: 'Período',
+    date: 'Data',
+    production: 'Produção',
+    consumption: 'Consumo',
+    balance: 'Saldo',
+    measurements: 'Medições',
+    exportPdf: 'Compartilhar PDF',
+    exportImage: 'Compartilhar imagem',
   },
   cycles: {
     title: 'Meus ciclos',

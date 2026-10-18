@@ -59,3 +59,33 @@ export function findCurrentCycle(measurements: Measurement[]): Cycle | null {
   const cycles = buildCycles(measurements);
   return cycles.find((cycle) => !cycle.closed) ?? null;
 }
+
+export interface SeriesPoint {
+  date: Date;
+  value: number;
+}
+
+export function buildCycleSeries(
+  cycle: Cycle,
+  measurements: Measurement[],
+): { consumption: SeriesPoint[]; production: SeriesPoint[] } {
+  const baseConsumption = cycle.start.consumption;
+  const baseProduction = cycle.start.production;
+
+  const inCycle = sortMeasurements(measurements).filter(
+    (measurement) =>
+      measurement.measuredAt.getTime() >= cycle.start.measuredAt.getTime() &&
+      measurement.measuredAt.getTime() <= cycle.end.measuredAt.getTime(),
+  );
+
+  return {
+    consumption: inCycle.map((measurement) => ({
+      date: measurement.measuredAt,
+      value: Math.max(0, measurement.consumption - baseConsumption),
+    })),
+    production: inCycle.map((measurement) => ({
+      date: measurement.measuredAt,
+      value: Math.max(0, measurement.production - baseProduction),
+    })),
+  };
+}

@@ -32,6 +32,7 @@ export const en = {
     add: 'Add measurement',
     empty: 'No measurements yet',
     emptyHint: 'Add your first meter reading to start tracking.',
+    allCycles: 'All cycles',
     cycleEnd: 'Cycle end',
     consumption: 'Consumption',
     production: 'Production',
@@ -51,7 +52,14 @@ export const en = {
   },
   reports: {
     title: 'Reports',
-    placeholder: 'The report builder and export will live here.',
+    period: 'Period',
+    date: 'Date',
+    production: 'Production',
+    consumption: 'Consumption',
+    balance: 'Balance',
+    measurements: 'Measurements',
+    exportPdf: 'Share PDF',
+    exportImage: 'Share image',
   },
   cycles: {
     title: 'My cycles',
