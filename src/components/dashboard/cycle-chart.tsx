@@ -7,8 +7,8 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { LineGraph, type GraphPoint } from 'react-native-graph';
 
+import { GraphPlot } from '@/components/dashboard/graph-plot';
 import { Text } from '@/components/ui/text';
 import type { Cycle } from '@/domain/entities/cycle';
 import type { Measurement } from '@/domain/entities/measurement';
@@ -22,15 +22,18 @@ type Props = {
   measurements: Measurement[];
 };
 
-type Series = {
-  consumption: GraphPoint[];
-  production: GraphPoint[];
+type Point = {
+  date: Date;
+  value: number;
 };
 
-const LINE_THICKNESS = 3;
-const DOT_SIZE = 8;
-const DOT_SIZE_ACTIVE = 12;
+type Series = {
+  consumption: Point[];
+  production: Point[];
+};
+
 const ITEM_WIDTH = 76;
+const GRAPH_PADDING = 8;
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
@@ -50,6 +53,7 @@ export function CycleChart({ cycle, measurements }: Props) {
   const [wheelWidth, setWheelWidth] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const userScrolling = useRef(false);
 
   const series = useMemo<Series>(() => {
     if (!cycle) {
@@ -77,12 +81,6 @@ export function CycleChart({ cycle, measurements }: Props) {
     };
   }, [cycle, measurements]);
 
-  const maxValue = Math.max(
-    1,
-    ...series.consumption.map((point) => point.value),
-    ...series.production.map((point) => point.value),
-  );
-
   const count = series.consumption.length;
   const lastIndex = count - 1;
   const activeIndex =
@@ -92,67 +90,26 @@ export function CycleChart({ cycle, measurements }: Props) {
 
   const xMin = series.consumption[0]?.date.getTime() ?? 0;
   const xMax = series.consumption[lastIndex]?.date.getTime() ?? 0;
-  const xDiff = xMax - xMin;
-  const drawingWidth = size.width - 2 * LINE_THICKNESS;
-  const drawingHeight = size.height - 2 * LINE_THICKNESS;
-
-  const position = (date: Date, value: number) => {
-    const x =
-      xDiff > 0
-        ? Math.floor(drawingWidth * ((date.getTime() - xMin) / xDiff)) +
-          LINE_THICKNESS
-        : LINE_THICKNESS;
-    const y =
-      drawingHeight -
-      Math.floor(drawingHeight * (value / maxValue)) +
-      LINE_THICKNESS;
-    return { x, y };
-  };
-
-  const hasData = count >= 2 && xDiff > 0;
-  const range = { y: { min: 0, max: maxValue } };
+  const hasData = count >= 2 && xMax > xMin;
 
   const scrollToLast = () => {
-    if (lastIndex >= 0) {
-      scrollRef.current?.scrollTo({
-        x: lastIndex * ITEM_WIDTH,
-        animated: false,
-      });
+    if (lastIndex < 0) {
+      return;
     }
+    scrollRef.current?.scrollTo({ x: lastIndex * ITEM_WIDTH, animated: false });
+    setSelectedIndex(lastIndex);
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!userScrolling.current) {
+      return;
+    }
     const raw = Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH);
     const clamped = Math.min(Math.max(raw, 0), Math.max(lastIndex, 0));
     if (clamped !== activeIndex) {
       setSelectedIndex(clamped);
     }
   };
-
-  const renderDots = (points: GraphPoint[], color: string) =>
-    points.map((point, index) => {
-      const { x, y } = position(point.date, point.value);
-      const active = index === activeIndex;
-      const dotSize = active ? DOT_SIZE_ACTIVE : DOT_SIZE;
-
-      return (
-        <View
-          key={`${color}-${index}`}
-          style={[
-            styles.point,
-            {
-              left: x - dotSize / 2,
-              top: y - dotSize / 2,
-              width: dotSize,
-              height: dotSize,
-              borderRadius: dotSize / 2,
-              backgroundColor: active ? color : colors.textTertiary,
-              borderColor: colors.surface,
-            },
-          ]}
-        />
-      );
-    });
 
   const activeConsumption = series.consumption[activeIndex];
   const activeProduction = series.production[activeIndex];
@@ -185,27 +142,24 @@ export function CycleChart({ cycle, measurements }: Props) {
           onLayout={(event: LayoutChangeEvent) =>
             setSize(event.nativeEvent.layout)
           }>
-          <LineGraph
-            animated={false}
-            points={series.consumption}
-            color={colors.primary}
-            lineThickness={LINE_THICKNESS}
-            range={range}
-            style={StyleSheet.absoluteFill}
-          />
-          <LineGraph
-            animated={false}
-            points={series.production}
-            color={colors.accent}
-            lineThickness={LINE_THICKNESS}
-            range={range}
-            style={StyleSheet.absoluteFill}
-          />
           {size.width > 0 ? (
-            <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-              {renderDots(series.consumption, colors.primary)}
-              {renderDots(series.production, colors.accent)}
-            </View>
+            <GraphPlot
+              width={size.width}
+              height={size.height}
+              padding={{
+                left: GRAPH_PADDING,
+                right: GRAPH_PADDING,
+                top: GRAPH_PADDING,
+                bottom: GRAPH_PADDING,
+              }}
+              consumption={series.consumption}
+              production={series.production}
+              activeIndex={activeIndex}
+              consumptionColor={colors.primary}
+              productionColor={colors.accent}
+              gridColor={colors.border}
+              inactiveDotColor={colors.textTertiary}
+            />
           ) : null}
         </View>
       ) : (
@@ -227,6 +181,9 @@ export function CycleChart({ cycle, measurements }: Props) {
             snapToInterval={ITEM_WIDTH}
             decelerationRate="fast"
             onScroll={onScroll}
+            onScrollBeginDrag={() => {
+              userScrolling.current = true;
+            }}
             onContentSizeChange={scrollToLast}
             scrollEventThrottle={16}
             contentContainerStyle={{
@@ -297,10 +254,6 @@ const styles = StyleSheet.create({
   graph: {
     height: 180,
     marginTop: spacing.sm,
-  },
-  point: {
-    position: 'absolute',
-    borderWidth: 2,
   },
   wheel: {
     marginTop: spacing.sm,

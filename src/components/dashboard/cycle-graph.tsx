@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { LineGraph, type GraphPoint } from 'react-native-graph';
 
+import { GraphPlot } from '@/components/dashboard/graph-plot';
 import { Text } from '@/components/ui/text';
 import { buildCycleSeries, type Cycle } from '@/domain/entities/cycle';
 import type { Measurement } from '@/domain/entities/measurement';
@@ -10,9 +10,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatNumber, formatShortDate } from '@/lib/format';
 import { radius, spacing } from '@/theme';
 
-const LINE_THICKNESS = 3;
-const DOT_SIZE = 8;
-const DOT_SIZE_ACTIVE = 12;
 const PAD_LEFT = 44;
 const PAD_RIGHT = 8;
 const PAD_TOP = 8;
@@ -53,54 +50,12 @@ export function CycleGraph({
 
   const xMin = series.consumption[0]?.date.getTime() ?? 0;
   const xMax = series.consumption[lastIndex]?.date.getTime() ?? 0;
-  const xDiff = xMax - xMin;
+  const hasData = count >= 2 && xMax > xMin;
 
-  const plotWidth = size.width - PAD_LEFT - PAD_RIGHT;
-  const plotHeight = height - PAD_TOP - PAD_BOTTOM;
-  const innerWidth = plotWidth - 2 * LINE_THICKNESS;
-  const innerHeight = plotHeight - 2 * LINE_THICKNESS;
-
-  const position = (date: Date, value: number) => {
-    const x =
-      xDiff > 0
-        ? LINE_THICKNESS + Math.floor(innerWidth * ((date.getTime() - xMin) / xDiff))
-        : LINE_THICKNESS;
-    const y =
-      innerHeight - Math.floor(innerHeight * (value / maxValue)) + LINE_THICKNESS;
-    return { x, y };
-  };
-
-  const toY = (value: number) =>
-    innerHeight - Math.floor(innerHeight * (value / maxValue)) + LINE_THICKNESS;
-
-  const hasData = count >= 2 && xDiff > 0;
   const ticks = [maxValue, maxValue / 2, 0];
-  const range = { y: { min: 0, max: maxValue } };
-
-  const renderDots = (points: GraphPoint[], color: string) =>
-    points.map((point, index) => {
-      const { x, y } = position(point.date, point.value);
-      const active = index === activeIndex;
-      const dotSize = active ? DOT_SIZE_ACTIVE : DOT_SIZE;
-
-      return (
-        <View
-          key={`${color}-${index}`}
-          style={[
-            styles.point,
-            {
-              left: x - dotSize / 2,
-              top: y - dotSize / 2,
-              width: dotSize,
-              height: dotSize,
-              borderRadius: dotSize / 2,
-              backgroundColor: active ? color : colors.textTertiary,
-              borderColor: colors.surface,
-            },
-          ]}
-        />
-      );
-    });
+  const plotHeight = Math.max(0, size.height - PAD_TOP - PAD_BOTTOM);
+  const labelY = (value: number) =>
+    PAD_TOP + (1 - value / maxValue) * plotHeight;
 
   if (!hasData) {
     return (
@@ -157,54 +112,32 @@ export function CycleGraph({
         }>
         {size.width > 0 ? (
           <>
-            <View
-              style={[
-                styles.plot,
-                {
-                  left: PAD_LEFT,
-                  right: PAD_RIGHT,
-                  top: PAD_TOP,
-                  bottom: PAD_BOTTOM,
-                },
-              ]}>
-              {ticks.map((value) => (
-                <View
-                  key={value}
-                  style={[
-                    styles.grid,
-                    {
-                      top: toY(value),
-                      backgroundColor: colors.border,
-                    },
-                  ]}
-                />
-              ))}
-              <LineGraph
-                animated={false}
-                points={series.consumption}
-                color={colors.primary}
-                lineThickness={LINE_THICKNESS}
-                range={range}
-                style={StyleSheet.absoluteFill}
-              />
-              <LineGraph
-                animated={false}
-                points={series.production}
-                color={colors.accent}
-                lineThickness={LINE_THICKNESS}
-                range={range}
-                style={StyleSheet.absoluteFill}
-              />
-              <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-                {renderDots(series.consumption, colors.primary)}
-                {renderDots(series.production, colors.accent)}
-              </View>
-            </View>
+            <GraphPlot
+              width={size.width}
+              height={size.height}
+              padding={{
+                left: PAD_LEFT,
+                right: PAD_RIGHT,
+                top: PAD_TOP,
+                bottom: PAD_BOTTOM,
+              }}
+              consumption={series.consumption}
+              production={series.production}
+              activeIndex={activeIndex}
+              ticks={ticks}
+              consumptionColor={colors.primary}
+              productionColor={colors.accent}
+              gridColor={colors.border}
+              inactiveDotColor={colors.textTertiary}
+            />
 
             {ticks.map((value) => (
               <View
                 key={`y-${value}`}
-                style={[styles.yLabel, { top: PAD_TOP + toY(value) - 8, width: PAD_LEFT - 6 }]}>
+                style={[
+                  styles.yLabel,
+                  { top: labelY(value) - 8, width: PAD_LEFT - 6 },
+                ]}>
                 <Text variant="caption" color="textTertiary" style={styles.yLabelText}>
                   {formatNumber(value, locale)}
                 </Text>
@@ -252,19 +185,6 @@ const styles = StyleSheet.create({
   },
   graph: {
     marginTop: spacing.sm,
-  },
-  plot: {
-    position: 'absolute',
-  },
-  grid: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: StyleSheet.hairlineWidth,
-  },
-  point: {
-    position: 'absolute',
-    borderWidth: 2,
   },
   yLabel: {
     position: 'absolute',

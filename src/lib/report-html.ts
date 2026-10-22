@@ -51,13 +51,41 @@ function buildProjection(series: SeriesPoint[]): Projection {
   };
 }
 
-function polyline(
+function smoothPath(
   points: SeriesPoint[],
   { toX, toY }: Projection,
+  topBound: number,
+  bottomBound: number,
 ): string {
-  return points
-    .map((point) => `${toX(point.date).toFixed(1)},${toY(point.value).toFixed(1)}`)
-    .join(' ');
+  if (points.length === 0) {
+    return '';
+  }
+
+  const clamp = (value: number) =>
+    Math.min(Math.max(value, topBound), bottomBound);
+
+  const coords = points.map((point) => ({
+    x: toX(point.date),
+    y: toY(point.value),
+  }));
+
+  let d = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+
+  for (let index = 0; index < coords.length - 1; index += 1) {
+    const p0 = coords[index - 1] ?? coords[index];
+    const p1 = coords[index];
+    const p2 = coords[index + 1];
+    const p3 = coords[index + 2] ?? p2;
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = clamp(p1.y + (p2.y - p0.y) / 6);
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = clamp(p2.y - (p3.y - p1.y) / 6);
+
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+
+  return d;
 }
 
 function dots(
@@ -102,8 +130,10 @@ function buildChartSvg(
   const xLabels = `<text x="${PAD_LEFT}" y="${SVG_HEIGHT - 8}" fill="#8A909E" font-size="11" text-anchor="start">${formatShortDate(first, locale)}</text>
     <text x="${SVG_WIDTH - PAD_RIGHT}" y="${SVG_HEIGHT - 8}" fill="#8A909E" font-size="11" text-anchor="end">${formatShortDate(last, locale)}</text>`;
 
-  const consumptionLine = polyline(consumption, projection);
-  const productionLine = polyline(production, projection);
+  const topBound = PAD_TOP;
+  const bottomBound = SVG_HEIGHT - PAD_BOTTOM;
+  const consumptionLine = smoothPath(consumption, projection, topBound, bottomBound);
+  const productionLine = smoothPath(production, projection, topBound, bottomBound);
 
   return `
     <div class="legend">
@@ -115,8 +145,8 @@ function buildChartSvg(
       ${grid}
       ${yLabels}
       ${xLabels}
-      <polyline points="${productionLine}" fill="none" stroke="#FEB317" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-      <polyline points="${consumptionLine}" fill="none" stroke="#0A6BFE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="${productionLine}" fill="none" stroke="#FEB317" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="${consumptionLine}" fill="none" stroke="#0A6BFE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
       ${dots(consumption, '#0A6BFE', projection)}
       ${dots(production, '#FEB317', projection)}
     </svg>`;
