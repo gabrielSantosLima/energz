@@ -35,6 +35,9 @@ export const en = {
     empty: 'No measurements yet',
     emptyHint: 'Add your first meter reading to start tracking.',
     allCycles: 'All cycles',
+    saved: 'Measurement saved',
+    deleted: 'Measurement deleted',
+    deletedMany: '{{count}} measurements deleted',
     cycleEnd: 'Cycle end',
     consumption: 'Consumption',
     production: 'Production',
@@ -84,6 +87,8 @@ export const en = {
     readings: 'Readings',
     deleteConfirmTitle: 'Delete cycles',
     deleteConfirmMessage: 'This deletes the measurements of the selected cycles.',
+    deleted: 'Cycle deleted',
+    deletedMany: '{{count}} cycles deleted',
   },
   bills: {
     title: 'Analyze energy bills',

@@ -18,6 +18,7 @@ import { NumberField } from '@/components/ui/number-field';
 import { Screen } from '@/components/ui/screen';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
+import { useToast } from '@/contexts/toast';
 import type { Measurement } from '@/domain/entities/measurement';
 import {
   useMeasurement,
@@ -52,6 +53,7 @@ function MeasurementForm({
 }: FormProps) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
+  const toast = useToast();
 
   const lastMeasurement =
     measurements.length > 0 ? measurements[measurements.length - 1] : null;
@@ -66,7 +68,6 @@ function MeasurementForm({
   const [endsCycle, setEndsCycle] = useState(initial?.endsCycle ?? false);
   const [restart, setRestart] = useState(initial?.restart ?? false);
   const [saving, setSaving] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const previous = useMemo(() => {
     const before = measurements.filter(
@@ -99,7 +100,6 @@ function MeasurementForm({
     }
 
     setSaving(true);
-    setSubmitError(null);
     try {
       await onSubmit({
         measuredAt: date,
@@ -109,7 +109,7 @@ function MeasurementForm({
         restart,
       });
     } catch (cause) {
-      setSubmitError(cause instanceof Error ? cause.message : String(cause));
+      toast.show(cause instanceof Error ? cause.message : String(cause), 'error');
       setSaving(false);
     }
   };
@@ -128,8 +128,9 @@ function MeasurementForm({
           style: 'destructive',
           onPress: () => {
             void onDelete().catch((cause) => {
-              setSubmitError(
+              toast.show(
                 cause instanceof Error ? cause.message : String(cause),
+                'error',
               );
             });
           },
@@ -210,12 +211,6 @@ function MeasurementForm({
           </Text>
         </View>
 
-        {submitError ? (
-          <Text variant="body" color="danger">
-            {submitError}
-          </Text>
-        ) : null}
-
         <Button
           label={t('measurements.form.save')}
           onPress={onSave}
@@ -241,6 +236,7 @@ export default function MeasurementFormScreen() {
 
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const toast = useToast();
   const { measurement, loading } = useMeasurement(id);
   const { measurements, loading: measurementsLoading } = useMeasurements();
   const { createMeasurement, updateMeasurement, deleteMeasurement } =
@@ -252,6 +248,7 @@ export default function MeasurementFormScreen() {
     } else {
       await updateMeasurement({ id, ...input });
     }
+    toast.show(t('measurements.saved'), 'success');
     router.back();
   };
 
@@ -260,6 +257,7 @@ export default function MeasurementFormScreen() {
       return;
     }
     await deleteMeasurement(id);
+    toast.show(t('measurements.deleted'), 'success');
     router.back();
   };
 

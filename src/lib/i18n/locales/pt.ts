@@ -35,6 +35,9 @@ export const pt = {
     empty: 'Nenhuma medição ainda',
     emptyHint: 'Adicione a primeira leitura do medidor para começar.',
     allCycles: 'Todos os ciclos',
+    saved: 'Medição salva',
+    deleted: 'Medição excluída',
+    deletedMany: '{{count}} medições excluídas',
     cycleEnd: 'Fim de ciclo',
     consumption: 'Consumo',
     production: 'Produção',
@@ -84,6 +87,8 @@ export const pt = {
     readings: 'Leituras',
     deleteConfirmTitle: 'Excluir ciclos',
     deleteConfirmMessage: 'Isso exclui as medições dos ciclos selecionados.',
+    deleted: 'Ciclo excluído',
+    deletedMany: '{{count}} ciclos excluídos',
   },
   bills: {
     title: 'Analisar contas de energia',

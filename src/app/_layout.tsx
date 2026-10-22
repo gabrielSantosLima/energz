@@ -14,6 +14,7 @@ import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import '@/contexts/container';
+import { ToastProvider } from '@/contexts/toast';
 import { PillNav } from '@/components/ui/pill-nav';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
@@ -49,15 +50,17 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <View style={[styles.root, { backgroundColor: colors.background }]}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
-          }}
-        />
-        <PillNav />
-      </View>
+      <ToastProvider>
+        <View style={[styles.root, { backgroundColor: colors.background }]}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          />
+          <PillNav />
+        </View>
+      </ToastProvider>
     </GestureHandlerRootView>
   );
 }

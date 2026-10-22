@@ -8,6 +8,7 @@ import { Screen } from '@/components/ui/screen';
 import { SelectionHeader } from '@/components/ui/selection-header';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
+import { useToast } from '@/contexts/toast';
 import type { Cycle } from '@/domain/entities/cycle';
 import { useCycles } from '@/hooks/use-cycles';
 import { useTheme } from '@/hooks/use-theme';
@@ -18,6 +19,7 @@ import { radius, spacing } from '@/theme';
 export default function CyclesScreen() {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
+  const toast = useToast();
   const { cycles, loading, refreshing, error, refresh, deleteCycles } =
     useCycles();
 
@@ -57,9 +59,16 @@ export default function CyclesScreen() {
           text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
+            const count = selectedIds.length;
             void (async () => {
               await deleteCycles(selectedIds);
               cancelSelection();
+              toast.show(
+                count === 1
+                  ? t('cycles.deleted')
+                  : t('cycles.deletedMany', { count }),
+                'success',
+              );
             })();
           },
         },

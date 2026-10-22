@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { SelectionHeader } from '@/components/ui/selection-header';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
+import { useToast } from '@/contexts/toast';
 import type { Measurement } from '@/domain/entities/measurement';
 import { useCycles } from '@/hooks/use-cycles';
 import { useMeasurementActions, useMeasurements } from '@/hooks/use-measurements';
@@ -21,6 +22,7 @@ import { radius, spacing } from '@/theme';
 export default function MeasurementsScreen() {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
+  const toast = useToast();
   const { measurements, loading, refreshing, error, refresh, reload } =
     useMeasurements();
   const { deleteMeasurements } = useMeasurementActions();
@@ -89,10 +91,17 @@ export default function MeasurementsScreen() {
           text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
+            const count = selectedIds.length;
             void (async () => {
               await deleteMeasurements(selectedIds);
               await reload();
               cancelSelection();
+              toast.show(
+                count === 1
+                  ? t('measurements.deleted')
+                  : t('measurements.deletedMany', { count }),
+                'success',
+              );
             })();
           },
         },
