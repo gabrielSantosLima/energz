@@ -7,6 +7,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import * as Notifications from 'expo-notifications';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -16,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/contexts/container';
 import { ToastProvider } from '@/contexts/toast';
 import { PillNav } from '@/components/ui/pill-nav';
+import { useNotificationObserver } from '@/hooks/use-notification-observer';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -26,6 +28,15 @@ SplashScreen.setOptions({
 
 SplashScreen.preventAutoHideAsync();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -35,6 +46,8 @@ export default function RootLayout() {
   });
   const { hydrated } = usePreferences();
   const { colors } = useTheme();
+
+  useNotificationObserver();
 
   const ready = fontsLoaded && hydrated;
 

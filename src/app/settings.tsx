@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { NotificationSection } from '@/components/settings/notification-section';
 import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Text } from '@/components/ui/text';
@@ -46,6 +47,8 @@ export default function SettingsScreen() {
           ]}
         />
       </View>
+
+      <NotificationSection />
 
       <View style={styles.section}>
         <Text variant="label" color="textSecondary">

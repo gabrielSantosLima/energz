@@ -112,5 +112,24 @@ export const pt = {
       en: 'Inglês',
       pt: 'Português',
     },
+    notifications: {
+      title: 'Notificações',
+      measurement: {
+        title: 'Lembretes de medição',
+        description: 'Receba lembretes diários para registrar suas medições.',
+      },
+      permission: {
+        title: 'Notificações desativadas',
+        message:
+          'Ative as notificações nas configurações do dispositivo para receber os lembretes.',
+        open: 'Abrir configurações',
+      },
+    },
+  },
+  notifications: {
+    measurement: {
+      title: 'Hora de medir',
+      body: 'Não esqueça de registrar sua medição.',
+    },
   },
 };

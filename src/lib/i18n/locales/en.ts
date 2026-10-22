@@ -112,5 +112,24 @@ export const en = {
       en: 'English',
       pt: 'Portuguese',
     },
+    notifications: {
+      title: 'Notifications',
+      measurement: {
+        title: 'Measurement reminders',
+        description: 'Get daily reminders to record your measurements.',
+      },
+      permission: {
+        title: 'Notifications disabled',
+        message:
+          'Enable notifications in your device settings to receive reminders.',
+        open: 'Open settings',
+      },
+    },
+  },
+  notifications: {
+    measurement: {
+      title: 'Time to measure',
+      body: 'Do not forget to log your measurement.',
+    },
   },
 };
