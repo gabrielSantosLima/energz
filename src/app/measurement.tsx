@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,17 +14,19 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { DateField } from '@/components/ui/date-field';
+import { NumberField } from '@/components/ui/number-field';
 import { Screen } from '@/components/ui/screen';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
-import { TextInput } from '@/components/ui/text-input';
 import type { Measurement } from '@/domain/entities/measurement';
 import {
   useMeasurement,
   useMeasurementActions,
+  useMeasurements,
 } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatNumber } from '@/lib/format';
 import { radius, spacing } from '@/theme';
 
 type FormInput = {
@@ -32,35 +34,62 @@ type FormInput = {
   consumption: number;
   production: number;
   endsCycle: boolean;
+  restart: boolean;
 };
 
 type FormProps = {
   initial: Measurement | null;
+  measurements: Measurement[];
   onSubmit: (input: FormInput) => Promise<void>;
   onDelete?: () => Promise<void>;
 };
 
-function MeasurementForm({ initial, onSubmit, onDelete }: FormProps) {
+function MeasurementForm({
+  initial,
+  measurements,
+  onSubmit,
+  onDelete,
+}: FormProps) {
   const { colors } = useTheme();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+
+  const lastMeasurement =
+    measurements.length > 0 ? measurements[measurements.length - 1] : null;
 
   const [date, setDate] = useState(initial?.measuredAt ?? new Date());
   const [consumption, setConsumption] = useState(
-    initial ? String(initial.consumption) : '',
+    initial?.consumption ?? lastMeasurement?.consumption ?? 0,
   );
   const [production, setProduction] = useState(
-    initial ? String(initial.production) : '',
+    initial?.production ?? lastMeasurement?.production ?? 0,
   );
   const [endsCycle, setEndsCycle] = useState(initial?.endsCycle ?? false);
+  const [restart, setRestart] = useState(initial?.restart ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onSave = async () => {
-    const consumptionValue = Number(consumption.replace(',', '.'));
-    const productionValue = Number(production.replace(',', '.'));
+  const previous = useMemo(() => {
+    const before = measurements.filter(
+      (measurement) =>
+        measurement.id !== initial?.id &&
+        measurement.measuredAt.getTime() < date.getTime(),
+    );
+    return before.length > 0 ? before[before.length - 1] : null;
+  }, [measurements, initial?.id, date]);
 
-    if (!Number.isFinite(consumptionValue) || !Number.isFinite(productionValue)) {
-      setError(t('measurements.form.invalidNumber'));
+  const minConsumption = restart ? 0 : (previous?.consumption ?? 0);
+  const minProduction = restart ? 0 : (previous?.production ?? 0);
+
+  const onSave = async () => {
+    if (consumption <= 0 || production <= 0) {
+      setError(t('measurements.form.positive'));
+      return;
+    }
+    if (
+      !restart &&
+      (consumption < minConsumption || production < minProduction)
+    ) {
+      setError(t('measurements.form.belowPrevious'));
       return;
     }
 
@@ -69,9 +98,10 @@ function MeasurementForm({ initial, onSubmit, onDelete }: FormProps) {
     try {
       await onSubmit({
         measuredAt: date,
-        consumption: consumptionValue,
-        production: productionValue,
+        consumption,
+        production,
         endsCycle,
+        restart,
       });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -115,21 +145,30 @@ function MeasurementForm({ initial, onSubmit, onDelete }: FormProps) {
           onChange={setDate}
         />
 
-        <TextInput
+        <NumberField
           label={t('measurements.form.consumption')}
           value={consumption}
-          onChangeText={setConsumption}
-          keyboardType="decimal-pad"
-          placeholder="0"
+          onChange={setConsumption}
+          min={minConsumption}
+          unit="kWh"
         />
 
-        <TextInput
+        <NumberField
           label={t('measurements.form.production')}
           value={production}
-          onChangeText={setProduction}
-          keyboardType="decimal-pad"
-          placeholder="0"
+          onChange={setProduction}
+          min={minProduction}
+          unit="kWh"
         />
+
+        {!restart && previous ? (
+          <Text variant="caption" color="textTertiary">
+            {t('measurements.form.minHint', {
+              consumption: formatNumber(minConsumption, locale),
+              production: formatNumber(minProduction, locale),
+            })}
+          </Text>
+        ) : null}
 
         <View style={styles.switchRow}>
           <Text variant="label" color="textSecondary">
@@ -141,6 +180,23 @@ function MeasurementForm({ initial, onSubmit, onDelete }: FormProps) {
             trackColor={{ true: colors.primary }}
             thumbColor={colors.surface}
           />
+        </View>
+
+        <View style={styles.switchBlock}>
+          <View style={styles.switchRow}>
+            <Text variant="label" color="textSecondary" style={styles.switchLabel}>
+              {t('measurements.form.restart')}
+            </Text>
+            <Switch
+              value={restart}
+              onValueChange={setRestart}
+              trackColor={{ true: colors.primary }}
+              thumbColor={colors.surface}
+            />
+          </View>
+          <Text variant="caption" color="textTertiary">
+            {t('measurements.form.restartHint')}
+          </Text>
         </View>
 
         {error ? (
@@ -175,6 +231,7 @@ export default function MeasurementFormScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { measurement, loading } = useMeasurement(id);
+  const { measurements, loading: measurementsLoading } = useMeasurements();
   const { createMeasurement, updateMeasurement, deleteMeasurement } =
     useMeasurementActions();
 
@@ -216,7 +273,7 @@ export default function MeasurementFormScreen() {
         </Text>
       </View>
 
-      {loading ? (
+      {loading || measurementsLoading ? (
         <View style={styles.form}>
           <Skeleton height={72} />
           <Skeleton height={72} />
@@ -226,6 +283,7 @@ export default function MeasurementFormScreen() {
       ) : (
         <MeasurementForm
           initial={measurement}
+          measurements={measurements}
           onSubmit={handleSubmit}
           onDelete={isNew ? undefined : handleDelete}
         />
@@ -257,5 +315,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  switchBlock: {
+    gap: spacing.xs,
+  },
+  switchLabel: {
+    flex: 1,
+    paddingRight: spacing.md,
   },
 });

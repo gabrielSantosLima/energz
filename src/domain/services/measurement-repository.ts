@@ -4,7 +4,7 @@ import { injectable } from 'tsyringe';
 import type { Measurement } from '@/domain/entities/measurement';
 
 const DATABASE_NAME = 'energz.db';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 type MeasurementRow = {
   id: string;
@@ -12,6 +12,7 @@ type MeasurementRow = {
   consumption: number;
   production: number;
   ends_cycle: number;
+  restart: number;
   created_at: number;
   updated_at: number;
 };
@@ -23,6 +24,7 @@ function toMeasurement(row: MeasurementRow): Measurement {
     consumption: row.consumption,
     production: row.production,
     endsCycle: row.ends_cycle === 1,
+    restart: row.restart === 1,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -49,7 +51,7 @@ export class MeasurementRepository {
     );
     const currentVersion = versionRow?.user_version ?? 0;
 
-    if (currentVersion < DATABASE_VERSION) {
+    if (currentVersion < 1) {
       await database.execAsync(`
         CREATE TABLE IF NOT EXISTS measurements (
           id TEXT PRIMARY KEY NOT NULL,
@@ -57,10 +59,25 @@ export class MeasurementRepository {
           consumption REAL NOT NULL,
           production REAL NOT NULL,
           ends_cycle INTEGER NOT NULL DEFAULT 0,
+          restart INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
         );
       `);
+    }
+
+    if (currentVersion < 2) {
+      const columns = await database.getAllAsync<{ name: string }>(
+        'PRAGMA table_info(measurements)',
+      );
+      if (!columns.some((column) => column.name === 'restart')) {
+        await database.execAsync(
+          'ALTER TABLE measurements ADD COLUMN restart INTEGER NOT NULL DEFAULT 0;',
+        );
+      }
+    }
+
+    if (currentVersion < DATABASE_VERSION) {
       await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION};`);
     }
 
@@ -88,13 +105,14 @@ export class MeasurementRepository {
     const database = await this.getDatabase();
     await database.runAsync(
       `INSERT INTO measurements
-        (id, measured_at, consumption, production, ends_cycle, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        (id, measured_at, consumption, production, ends_cycle, restart, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       measurement.id,
       measurement.measuredAt.getTime(),
       measurement.consumption,
       measurement.production,
       measurement.endsCycle ? 1 : 0,
+      measurement.restart ? 1 : 0,
       measurement.createdAt.getTime(),
       measurement.updatedAt.getTime(),
     );
@@ -104,12 +122,13 @@ export class MeasurementRepository {
     const database = await this.getDatabase();
     await database.runAsync(
       `UPDATE measurements
-       SET measured_at = ?, consumption = ?, production = ?, ends_cycle = ?, updated_at = ?
+       SET measured_at = ?, consumption = ?, production = ?, ends_cycle = ?, restart = ?, updated_at = ?
        WHERE id = ?`,
       measurement.measuredAt.getTime(),
       measurement.consumption,
       measurement.production,
       measurement.endsCycle ? 1 : 0,
+      measurement.restart ? 1 : 0,
       measurement.updatedAt.getTime(),
       measurement.id,
     );

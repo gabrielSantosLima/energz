@@ -22,6 +22,7 @@ export class UpdateMeasurementUseCase {
       consumption: input.consumption ?? existing.consumption,
       production: input.production ?? existing.production,
       endsCycle: input.endsCycle ?? existing.endsCycle,
+      restart: input.restart ?? existing.restart,
       updatedAt: new Date(),
     };
 

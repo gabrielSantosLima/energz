@@ -19,6 +19,7 @@ export class CreateMeasurementUseCase {
       consumption: input.consumption,
       production: input.production,
       endsCycle: input.endsCycle,
+      restart: input.restart,
       createdAt: now,
       updatedAt: now,
     };

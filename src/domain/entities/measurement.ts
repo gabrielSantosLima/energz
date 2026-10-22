@@ -4,6 +4,7 @@ export interface Measurement {
   consumption: number;
   production: number;
   endsCycle: boolean;
+  restart: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,6 +14,7 @@ export type MeasurementInput = {
   consumption: number;
   production: number;
   endsCycle: boolean;
+  restart: boolean;
 };
 
 export interface MeasurementInterval {
@@ -32,12 +34,14 @@ export function computeInterval(
   from: Measurement,
   to: Measurement,
 ): MeasurementInterval {
-  return {
-    from,
-    to,
-    consumption: Math.max(0, to.consumption - from.consumption),
-    production: Math.max(0, to.production - from.production),
-  };
+  const consumption = to.restart
+    ? Math.max(0, to.consumption)
+    : Math.max(0, to.consumption - from.consumption);
+  const production = to.restart
+    ? Math.max(0, to.production)
+    : Math.max(0, to.production - from.production);
+
+  return { from, to, consumption, production };
 }
 
 export function buildIntervals(sorted: Measurement[]): MeasurementInterval[] {

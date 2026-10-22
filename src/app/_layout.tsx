@@ -11,6 +11,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import '@/contexts/container';
 import { PillNav } from '@/components/ui/pill-nav';
@@ -47,15 +48,17 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      />
-      <PillNav />
-    </View>
+    <GestureHandlerRootView style={styles.root}>
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        />
+        <PillNav />
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
