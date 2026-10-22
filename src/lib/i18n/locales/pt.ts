@@ -50,6 +50,7 @@ export const pt = {
       minHint: 'Mínimo pela medição anterior — consumo {{consumption}}, produção {{production}}.',
       positive: 'Informe valores maiores que zero.',
       belowPrevious: 'Os valores devem ser iguais ou maiores que a medição anterior.',
+      restore: 'Voltar ao valor anterior',
       save: 'Salvar',
       delete: 'Excluir',
       deleteConfirmTitle: 'Excluir medição',

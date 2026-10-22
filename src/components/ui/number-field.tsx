@@ -15,6 +15,8 @@ type Props = {
   onChange: (value: number) => void;
   min?: number;
   unit?: string;
+  error?: string;
+  actionLabel?: string;
 };
 
 export function NumberField({
@@ -23,6 +25,8 @@ export function NumberField({
   onChange,
   min = 0,
   unit,
+  error,
+  actionLabel,
 }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -32,26 +36,33 @@ export function NumberField({
   const current = useSharedValue(value);
   const start = useSharedValue(value);
   const lower = useSharedValue(min);
+  const lastValid = useSharedValue(value);
 
   useEffect(() => {
     lower.value = min;
   }, [lower, min]);
 
-  const commit = (text: string) => {
-    const digits = text.replace(/[^0-9]/g, '');
-    const parsed = digits ? Number.parseInt(digits, 10) : Math.round(current.value);
-    const next = Math.max(
-      min,
-      Number.isFinite(parsed) ? parsed : Math.round(current.value),
-    );
-    current.value = Math.round(next);
-    onChange(Math.round(next));
-    setEditing(false);
-  };
+  useEffect(() => {
+    if (!error) {
+      lastValid.value = value;
+    }
+  }, [error, value, lastValid]);
 
   const beginEdit = (initial: number) => {
     setDraft(String(Math.round(initial)));
     setEditing(true);
+  };
+
+  const handleChangeText = (text: string) => {
+    setDraft(text);
+    const parsed = Number(text.replace(',', '.'));
+    const next = Number.isFinite(parsed) ? Math.round(parsed) : 0;
+    current.value = next;
+    onChange(next);
+  };
+
+  const finishEdit = () => {
+    setEditing(false);
   };
 
   const pan = Gesture.Pan()
@@ -93,15 +104,18 @@ export function NumberField({
         <View
           style={[
             styles.field,
-            { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+            {
+              backgroundColor: colors.surfaceMuted,
+              borderColor: error ? colors.danger : colors.border,
+            },
           ]}>
           {editing ? (
             <TextInput
               autoFocus
               value={draft}
-              onChangeText={setDraft}
-              onBlur={() => commit(draft)}
-              onSubmitEditing={() => commit(draft)}
+              onChangeText={handleChangeText}
+              onBlur={finishEdit}
+              onSubmitEditing={finishEdit}
               keyboardType="number-pad"
               placeholderTextColor={colors.textTertiary}
               style={[
@@ -126,7 +140,7 @@ export function NumberField({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('common.done')}
-              onPress={() => commit(draft)}
+              onPress={finishEdit}
               hitSlop={spacing.sm}>
               <SymbolView
                 name={{ ios: 'checkmark', android: 'check', web: 'check' }}
@@ -147,6 +161,29 @@ export function NumberField({
           )}
         </View>
       </GestureDetector>
+
+      {error ? (
+        <View style={styles.errorRow}>
+          <Text variant="caption" color="danger" style={styles.errorText}>
+            {error}
+          </Text>
+          {actionLabel ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                const restored = lastValid.value;
+                current.value = restored;
+                setDraft(String(restored));
+                onChange(restored);
+              }}
+              hitSlop={spacing.sm}>
+              <Text variant="caption" color="primary">
+                {actionLabel}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -167,6 +204,15 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   value: {
+    flex: 1,
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  errorText: {
     flex: 1,
   },
 });

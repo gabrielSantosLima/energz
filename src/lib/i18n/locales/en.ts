@@ -50,6 +50,7 @@ export const en = {
       minHint: 'Minimum from previous reading — consumption {{consumption}}, production {{production}}.',
       positive: 'Enter values greater than zero.',
       belowPrevious: 'Values must be equal to or greater than the previous reading.',
+      restore: 'Go back to previous value',
       save: 'Save',
       delete: 'Delete',
       deleteConfirmTitle: 'Delete measurement',

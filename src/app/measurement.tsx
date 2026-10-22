@@ -66,7 +66,7 @@ function MeasurementForm({
   const [endsCycle, setEndsCycle] = useState(initial?.endsCycle ?? false);
   const [restart, setRestart] = useState(initial?.restart ?? false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const previous = useMemo(() => {
     const before = measurements.filter(
@@ -80,21 +80,26 @@ function MeasurementForm({
   const minConsumption = restart ? 0 : (previous?.consumption ?? 0);
   const minProduction = restart ? 0 : (previous?.production ?? 0);
 
+  const consumptionError =
+    consumption <= 0
+      ? t('measurements.form.positive')
+      : !restart && consumption < minConsumption
+        ? t('measurements.form.belowPrevious')
+        : null;
+  const productionError =
+    production <= 0
+      ? t('measurements.form.positive')
+      : !restart && production < minProduction
+        ? t('measurements.form.belowPrevious')
+        : null;
+
   const onSave = async () => {
-    if (consumption <= 0 || production <= 0) {
-      setError(t('measurements.form.positive'));
-      return;
-    }
-    if (
-      !restart &&
-      (consumption < minConsumption || production < minProduction)
-    ) {
-      setError(t('measurements.form.belowPrevious'));
+    if (consumptionError || productionError) {
       return;
     }
 
     setSaving(true);
-    setError(null);
+    setSubmitError(null);
     try {
       await onSubmit({
         measuredAt: date,
@@ -104,7 +109,7 @@ function MeasurementForm({
         restart,
       });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
+      setSubmitError(cause instanceof Error ? cause.message : String(cause));
       setSaving(false);
     }
   };
@@ -123,7 +128,9 @@ function MeasurementForm({
           style: 'destructive',
           onPress: () => {
             void onDelete().catch((cause) => {
-              setError(cause instanceof Error ? cause.message : String(cause));
+              setSubmitError(
+                cause instanceof Error ? cause.message : String(cause),
+              );
             });
           },
         },
@@ -151,6 +158,8 @@ function MeasurementForm({
           onChange={setConsumption}
           min={minConsumption}
           unit="kWh"
+          error={consumptionError ?? undefined}
+          actionLabel={t('measurements.form.restore')}
         />
 
         <NumberField
@@ -159,6 +168,8 @@ function MeasurementForm({
           onChange={setProduction}
           min={minProduction}
           unit="kWh"
+          error={productionError ?? undefined}
+          actionLabel={t('measurements.form.restore')}
         />
 
         {!restart && previous ? (
@@ -199,16 +210,16 @@ function MeasurementForm({
           </Text>
         </View>
 
-        {error ? (
+        {submitError ? (
           <Text variant="body" color="danger">
-            {error}
+            {submitError}
           </Text>
         ) : null}
 
         <Button
           label={t('measurements.form.save')}
           onPress={onSave}
-          disabled={saving}
+          disabled={saving || Boolean(consumptionError) || Boolean(productionError)}
         />
 
         {onDelete ? (
