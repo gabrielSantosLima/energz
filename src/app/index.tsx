@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CycleSelector } from '@/components/cycles/cycle-selector';
@@ -11,8 +11,10 @@ import { MetricCardSkeleton } from '@/components/dashboard/metric-card-skeleton'
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
+import { useToast } from '@/contexts/toast';
 import { buildIntervals } from '@/domain/entities/measurement';
 import { useCycles } from '@/hooks/use-cycles';
+import { useDevMode } from '@/hooks/use-dev-mode';
 import { useMeasurements } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -29,6 +31,10 @@ type Feature = {
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const toast = useToast();
+  const { devMode, enableDevMode } = useDevMode();
+  const logoTapCount = useRef(0);
+  const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
     cycles,
     loading: cyclesLoading,
@@ -86,6 +92,29 @@ export default function DashboardScreen() {
       ? lastInterval.production - previousInterval.production
       : null;
 
+  const handleLogoTap = () => {
+    if (devMode) {
+      return;
+    }
+    logoTapCount.current += 1;
+    if (logoTapTimer.current) {
+      clearTimeout(logoTapTimer.current);
+    }
+    logoTapTimer.current = setTimeout(() => {
+      logoTapCount.current = 0;
+    }, 1500);
+    if (logoTapCount.current >= 5) {
+      logoTapCount.current = 0;
+      if (logoTapTimer.current) {
+        clearTimeout(logoTapTimer.current);
+      }
+      enableDevMode();
+      toast.show(t('dev.enabled'), 'success');
+    } else {
+      toast.show(t('dev.tapProgress', { count: logoTapCount.current }), 'info');
+    }
+  };
+
   const features: Feature[] = [
     {
       key: 'measurements',
@@ -119,15 +148,28 @@ export default function DashboardScreen() {
     },
   ];
 
+  if (devMode) {
+    features.push({
+      key: 'dev',
+      label: t('dev.title'),
+      icon: { ios: 'hammer', android: 'build', web: 'build' },
+      href: '/dev',
+    });
+  }
+
   return (
     <Screen scroll refreshing={refreshing} onRefresh={refresh}>
       <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logo}
-          contentFit="contain"
+        <Pressable
+          accessibilityRole="imagebutton"
           accessibilityLabel={t('dashboard.title')}
-        />
+          onPress={handleLogoTap}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            contentFit="contain"
+          />
+        </Pressable>
         <View style={styles.headerText}>
           <Text variant="title">{t('dashboard.title')}</Text>
           <Text variant="caption" color="textSecondary">

@@ -8,7 +8,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter';
 import * as Notifications from 'expo-notifications';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -46,6 +46,7 @@ export default function RootLayout() {
   });
   const { hydrated } = usePreferences();
   const { colors } = useTheme();
+  const pathname = usePathname();
 
   useNotificationObserver();
 
@@ -71,7 +72,7 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.background },
             }}
           />
-          <PillNav />
+          {pathname === '/bill-scan' ? null : <PillNav />}
         </View>
       </ToastProvider>
     </GestureHandlerRootView>

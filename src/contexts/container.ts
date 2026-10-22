@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { container } from 'tsyringe';
 
+import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { ImageCapturer } from '@/domain/services/image-capturer';
 import { MeasurementRepository } from '@/domain/services/measurement-repository';
@@ -33,6 +34,7 @@ container.registerSingleton(NotificationSettingsStorage);
 container.registerSingleton(MeasurementRepository);
 container.registerSingleton(IdGenerator);
 container.registerSingleton(NotificationService);
+container.registerSingleton(BillImageProcessor);
 container.registerSingleton(ReportExporter);
 container.registerSingleton(ImageCapturer);
 

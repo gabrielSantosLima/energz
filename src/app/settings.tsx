@@ -1,9 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 
 import { NotificationSection } from '@/components/settings/notification-section';
+import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Text } from '@/components/ui/text';
+import { useToast } from '@/contexts/toast';
+import { useDevMode } from '@/hooks/use-dev-mode';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -13,6 +16,8 @@ import { radius, spacing } from '@/theme';
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const toast = useToast();
+  const { devMode, disableDevMode } = useDevMode();
   const { theme, locale, setTheme, setLocale } = usePreferences();
 
   return (
@@ -49,6 +54,22 @@ export default function SettingsScreen() {
       </View>
 
       <NotificationSection />
+
+      {devMode ? (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary">
+            {t('dev.title')}
+          </Text>
+          <Button
+            label={t('dev.disable')}
+            variant="secondary"
+            onPress={() => {
+              disableDevMode();
+              toast.show(t('dev.disabled'), 'success');
+            }}
+          />
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text variant="label" color="textSecondary">

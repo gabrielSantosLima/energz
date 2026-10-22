@@ -1,0 +1,7 @@
+{
+  "name": "bill-scanner",
+  "version": "0.1.0",
+  "description": "Native OpenCV bill image processing",
+  "main": "index.ts",
+  "private": true
+}
