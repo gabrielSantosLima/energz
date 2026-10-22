@@ -34,9 +34,9 @@ export function SegmentedControl<T extends string>({
             onPress={() => onChange(option.value)}
             style={[
               styles.segment,
-              active && { backgroundColor: colors.surface },
+              active && { backgroundColor: colors.primarySoft },
             ]}>
-            <Text variant="label" color={active ? 'textPrimary' : 'textSecondary'}>
+            <Text variant="label" color={active ? 'primary' : 'textSecondary'}>
               {option.label}
             </Text>
           </Pressable>

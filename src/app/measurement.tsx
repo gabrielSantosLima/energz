@@ -8,7 +8,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   View,
 } from 'react-native';
 
@@ -17,6 +16,7 @@ import { DateField } from '@/components/ui/date-field';
 import { NumberField } from '@/components/ui/number-field';
 import { Screen } from '@/components/ui/screen';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
 import type { Measurement } from '@/domain/entities/measurement';
@@ -51,7 +51,6 @@ function MeasurementForm({
   onSubmit,
   onDelete,
 }: FormProps) {
-  const { colors } = useTheme();
   const { t, locale } = useTranslation();
   const toast = useToast();
 
@@ -186,12 +185,7 @@ function MeasurementForm({
           <Text variant="label" color="textSecondary">
             {t('measurements.form.endsCycle')}
           </Text>
-          <Switch
-            value={endsCycle}
-            onValueChange={setEndsCycle}
-            trackColor={{ true: colors.primary }}
-            thumbColor={colors.surface}
-          />
+          <Switch value={endsCycle} onValueChange={setEndsCycle} />
         </View>
 
         <View style={styles.switchBlock}>
@@ -199,12 +193,7 @@ function MeasurementForm({
             <Text variant="label" color="textSecondary" style={styles.switchLabel}>
               {t('measurements.form.restart')}
             </Text>
-            <Switch
-              value={restart}
-              onValueChange={setRestart}
-              trackColor={{ true: colors.primary }}
-              thumbColor={colors.surface}
-            />
+            <Switch value={restart} onValueChange={setRestart} />
           </View>
           <Text variant="caption" color="textTertiary">
             {t('measurements.form.restartHint')}
