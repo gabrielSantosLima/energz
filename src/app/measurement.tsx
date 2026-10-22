@@ -79,6 +79,7 @@ function MeasurementForm({
 
   const minConsumption = restart ? 0 : (previous?.consumption ?? 0);
   const minProduction = restart ? 0 : (previous?.production ?? 0);
+  const canRestore = Boolean(initial) || Boolean(previous);
 
   const consumptionError =
     consumption <= 0
@@ -159,7 +160,7 @@ function MeasurementForm({
           min={minConsumption}
           unit="kWh"
           error={consumptionError ?? undefined}
-          actionLabel={t('measurements.form.restore')}
+          actionLabel={canRestore ? t('measurements.form.restore') : undefined}
         />
 
         <NumberField
@@ -169,7 +170,7 @@ function MeasurementForm({
           min={minProduction}
           unit="kWh"
           error={productionError ?? undefined}
-          actionLabel={t('measurements.form.restore')}
+          actionLabel={canRestore ? t('measurements.form.restore') : undefined}
         />
 
         {!restart && previous ? (
