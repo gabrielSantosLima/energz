@@ -1,0 +1,226 @@
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
+import { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
+import { TextInput } from '@/components/ui/text-input';
+import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
+import { useBillScanStore } from '@/store/bill-scan-store';
+import { radius, spacing } from '@/theme';
+
+export default function BillReviewScreen() {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const scan = useBillScanStore((state) => state.scan);
+
+  const [amount, setAmount] = useState('');
+  const [activeKwh, setActiveKwh] = useState('');
+  const [injectedKwh, setInjectedKwh] = useState('');
+  const [date, setDate] = useState('');
+  const [distributor, setDistributor] = useState('');
+  const [competence, setCompetence] = useState('');
+  const [unitCode, setUnitCode] = useState('');
+  const [flag, setFlag] = useState('');
+  const [accessKey, setAccessKey] = useState('');
+
+  const padding = {
+    paddingTop: insets.top + spacing.lg,
+    paddingBottom: insets.bottom + spacing.xl,
+    paddingHorizontal: spacing.lg,
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={[styles.flex, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentContainerStyle={[styles.content, padding]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            onPress={() => router.back()}
+            style={[styles.back, { backgroundColor: colors.surfaceMuted }]}>
+            <SymbolView
+              name={{
+                ios: 'chevron.left',
+                android: 'arrow_back',
+                web: 'arrow_back',
+              }}
+              size={20}
+              tintColor={colors.textPrimary}
+            />
+          </Pressable>
+          <View style={styles.headerText}>
+            <Text variant="title">{t('billReview.title')}</Text>
+            <Text variant="caption" color="textSecondary">
+              {t('billReview.subtitle')}
+            </Text>
+          </View>
+        </View>
+
+        {scan.processedUri ? (
+          <Image
+            source={{ uri: scan.processedUri }}
+            style={[
+              styles.image,
+              { borderColor: colors.border, backgroundColor: colors.surfaceMuted },
+            ]}
+            contentFit="contain"
+          />
+        ) : null}
+
+        <View
+          style={[
+            styles.notice,
+            { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+          ]}>
+          <Text variant="caption" color="textSecondary">
+            {t('billReview.parserNotice')}
+          </Text>
+        </View>
+
+        <TextInput
+          label={t('billReview.amount')}
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="decimal-pad"
+          placeholder="0,00"
+        />
+
+        <TextInput
+          label={t('billReview.activeKwh')}
+          value={activeKwh}
+          onChangeText={setActiveKwh}
+          keyboardType="number-pad"
+          placeholder="0"
+        />
+
+        <TextInput
+          label={t('billReview.injectedKwh')}
+          value={injectedKwh}
+          onChangeText={setInjectedKwh}
+          keyboardType="number-pad"
+          placeholder="0"
+        />
+
+        <TextInput
+          label={t('billReview.date')}
+          value={date}
+          onChangeText={setDate}
+          placeholder="YYYY-MM-DD"
+          autoCapitalize="none"
+        />
+
+        <TextInput
+          label={t('billReview.distributor')}
+          value={distributor}
+          onChangeText={setDistributor}
+          placeholder="—"
+        />
+
+        <TextInput
+          label={t('billReview.competence')}
+          value={competence}
+          onChangeText={setCompetence}
+          placeholder="YYYY-MM"
+          autoCapitalize="none"
+        />
+
+        <TextInput
+          label={t('billReview.unitCode')}
+          value={unitCode}
+          onChangeText={setUnitCode}
+          placeholder="—"
+        />
+
+        <TextInput
+          label={t('billReview.flag')}
+          value={flag}
+          onChangeText={setFlag}
+          placeholder="—"
+        />
+
+        <TextInput
+          label={t('billReview.accessKey')}
+          value={accessKey}
+          onChangeText={setAccessKey}
+          placeholder="—"
+          autoCapitalize="none"
+        />
+
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary">
+            {t('billReview.charges')}
+          </Text>
+          <View
+            style={[
+              styles.chargesEmpty,
+              { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+            ]}>
+            <Text variant="caption" color="textTertiary">
+              {t('billReview.chargesEmpty')}
+            </Text>
+          </View>
+        </View>
+
+        <Button label={t('billReview.save')} onPress={() => undefined} disabled />
+        <Text variant="caption" color="textTertiary" style={styles.saveHint}>
+          {t('billReview.saveHint')}
+        </Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  content: { gap: spacing.md },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  back: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: { flex: 1, gap: spacing.xs },
+  image: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  notice: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  section: { gap: spacing.xs, marginTop: spacing.sm },
+  chargesEmpty: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  saveHint: { textAlign: 'center' },
+});

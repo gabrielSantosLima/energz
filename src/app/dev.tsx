@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
+import { useBillScanStore } from '@/store/bill-scan-store';
 import { useDevStore } from '@/store/dev-store';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -14,8 +15,8 @@ export default function DevScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const devMode = useDevStore((state) => state.devMode);
-  const scan = useDevStore((state) => state.scan);
-  const resetScan = useDevStore((state) => state.resetScan);
+  const scan = useBillScanStore((state) => state.scan);
+  const resetScan = useBillScanStore((state) => state.resetScan);
 
   if (!devMode) {
     return (

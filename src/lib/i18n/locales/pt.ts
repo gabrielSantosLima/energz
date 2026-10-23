@@ -1,6 +1,8 @@
 export const pt = {
   common: {
     comingSoon: 'Em breve',
+    ai: 'IA',
+    new: 'Novo',
     back: 'Voltar',
     cancel: 'Cancelar',
     done: 'Concluir',
@@ -26,7 +28,7 @@ export const pt = {
       reports: 'Relatórios',
       bills: 'Analisar contas de energia',
       cycles: 'Meus ciclos',
-      agent: 'Agente de IA',
+      agent: 'Agente',
     },
   },
   measurements: {
@@ -156,5 +158,31 @@ export const pt = {
     flashOn: 'Ligar flash',
     flashOff: 'Desligar flash',
     googleScanner: 'Scanner do Google',
+  },
+  billPreview: {
+    retake: 'Tirar outra',
+    usePhoto: 'Usar foto',
+    processing: 'Processando...',
+    missing: 'Nenhuma imagem processada. Tire a foto novamente.',
+    backToCamera: 'Voltar para a câmera',
+  },
+  billReview: {
+    title: 'Revisar conta',
+    subtitle: 'Confirme os dados extraídos da conta.',
+    parserNotice:
+      'O agente de parsing preencherá estes campos automaticamente na próxima fase.',
+    amount: 'Valor total (R$)',
+    activeKwh: 'En Ativa (kWh)',
+    injectedKwh: 'En Injetado (kWh)',
+    date: 'Data (opcional)',
+    distributor: 'Distribuidora',
+    competence: 'Competência (AAAA-MM)',
+    unitCode: 'Código da unidade',
+    flag: 'Bandeira',
+    accessKey: 'Chave de acesso',
+    charges: 'Itens da conta',
+    chargesEmpty: 'Descontos e adicionais aparecerão aqui.',
+    save: 'Salvar conta',
+    saveHint: 'O salvamento será ativado com o agente de parsing.',
   },
 };

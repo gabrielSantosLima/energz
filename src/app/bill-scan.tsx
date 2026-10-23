@@ -17,7 +17,7 @@ import { useInjection } from '@/hooks/use-injection';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { mapGuideToPhoto, getContainRect } from '@/lib/photo-crop';
-import { useDevStore } from '@/store/dev-store';
+import { useBillScanStore } from '@/store/bill-scan-store';
 import { radius, spacing } from '@/theme';
 
 const PREVIEW_ASPECT = 3 / 4;
@@ -50,8 +50,8 @@ export default function BillScanScreen() {
           height: previewRect.height * 0.88,
         }
       : null;
-  const setScan = useDevStore((state) => state.setScan);
-  const resetScan = useDevStore((state) => state.resetScan);
+  const setScan = useBillScanStore((state) => state.setScan);
+  const resetScan = useBillScanStore((state) => state.resetScan);
 
   const onViewLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -63,7 +63,7 @@ export default function BillScanScreen() {
     setGuideRect({ x, y, width, height });
   };
 
-  const processAndRecognize = async (
+  const processImage = async (
     sourceUri: string,
     crop: { x: number; y: number; width: number; height: number },
     detect: boolean,
@@ -75,12 +75,8 @@ export default function BillScanScreen() {
       processMs: Date.now() - startedAt,
       detected: processed.detected,
     });
-
-    const ocrStartedAt = Date.now();
-    const text = await processor.recognizeText(processed.uri);
-    setScan({ rawText: text, ocrMs: Date.now() - ocrStartedAt });
     setProcessing(false);
-    router.replace('/dev');
+    router.push('/bill-preview');
   };
 
   const capture = async () => {
@@ -100,7 +96,7 @@ export default function BillScanScreen() {
         { width: photo.width, height: photo.height },
       );
       setScan({ originalUri: photo.uri });
-      await processAndRecognize(photo.uri, crop, true);
+      await processImage(photo.uri, crop, true);
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });
       setProcessing(false);
@@ -119,12 +115,13 @@ export default function BillScanScreen() {
         setProcessing(false);
         return;
       }
-      setScan({ originalUri: scanned.uri });
-      await processAndRecognize(
-        scanned.uri,
-        { x: 0, y: 0, width: 0, height: 0 },
-        false,
-      );
+      setScan({
+        originalUri: scanned.uri,
+        processedUri: scanned.uri,
+        detected: false,
+      });
+      setProcessing(false);
+      router.push('/bill-preview');
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });
       setProcessing(false);

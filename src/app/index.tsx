@@ -20,12 +20,15 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
 
+type FeatureTag = 'ai' | 'new';
+
 type Feature = {
   key: string;
   label: string;
   icon: SymbolViewProps['name'];
   href?: Href;
   badge?: string;
+  tags?: FeatureTag[];
 };
 
 export default function DashboardScreen() {
@@ -132,7 +135,8 @@ export default function DashboardScreen() {
       key: 'bills',
       label: t('dashboard.features.bills'),
       icon: { ios: 'bolt', android: 'bolt', web: 'bolt' },
-      badge: t('common.comingSoon'),
+      href: '/bill-scan',
+      tags: ['ai', 'new'],
     },
     {
       key: 'cycles',
@@ -145,6 +149,7 @@ export default function DashboardScreen() {
       label: t('dashboard.features.agent'),
       icon: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
       badge: t('common.comingSoon'),
+      tags: ['ai'],
     },
   ];
 
@@ -257,6 +262,33 @@ export default function DashboardScreen() {
                 style={styles.rowLabel}>
                 {feature.label}
               </Text>
+
+              {feature.tags?.map((tag) => (
+                <View
+                  key={tag}
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor: disabled
+                        ? colors.surfaceSelected
+                        : tag === 'ai'
+                          ? colors.primarySoft
+                          : colors.accentSoft,
+                    },
+                  ]}>
+                  <Text
+                    variant="caption"
+                    color={
+                      disabled
+                        ? 'textSecondary'
+                        : tag === 'ai'
+                          ? 'primary'
+                          : 'accent'
+                    }>
+                    {t(tag === 'ai' ? 'common.ai' : 'common.new')}
+                  </Text>
+                </View>
+              ))}
 
               {feature.badge ? (
                 <View style={[styles.badge, { backgroundColor: colors.surfaceSelected }]}>

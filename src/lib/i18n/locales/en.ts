@@ -1,6 +1,8 @@
 export const en = {
   common: {
     comingSoon: 'Coming Soon',
+    ai: 'AI',
+    new: 'New',
     back: 'Back',
     cancel: 'Cancel',
     done: 'Done',
@@ -26,7 +28,7 @@ export const en = {
       reports: 'Reports',
       bills: 'Analyze energy bills',
       cycles: 'My cycles',
-      agent: 'AI Agent',
+      agent: 'Agent',
     },
   },
   measurements: {
@@ -156,5 +158,31 @@ export const en = {
     flashOn: 'Turn flash on',
     flashOff: 'Turn flash off',
     googleScanner: 'Google Scanner',
+  },
+  billPreview: {
+    retake: 'Retake',
+    usePhoto: 'Use photo',
+    processing: 'Processing...',
+    missing: 'No processed image. Take a photo again.',
+    backToCamera: 'Back to camera',
+  },
+  billReview: {
+    title: 'Review bill',
+    subtitle: 'Confirm the data extracted from the bill.',
+    parserNotice:
+      'The parser agent will fill these fields automatically in the next phase.',
+    amount: 'Total amount (R$)',
+    activeKwh: 'En Ativa (kWh)',
+    injectedKwh: 'En Injetado (kWh)',
+    date: 'Date (optional)',
+    distributor: 'Distributor',
+    competence: 'Competence (YYYY-MM)',
+    unitCode: 'Unit code',
+    flag: 'Flag',
+    accessKey: 'Access key',
+    charges: 'Charges',
+    chargesEmpty: 'Discounts and additions will appear here.',
+    save: 'Save bill',
+    saveHint: 'Saving will be enabled with the parser agent.',
   },
 };

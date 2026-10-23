@@ -37,6 +37,12 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const HIDDEN_NAV_ROUTES = new Set([
+  '/bill-scan',
+  '/bill-preview',
+  '/bill-review',
+]);
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -72,7 +78,7 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.background },
             }}
           />
-          {pathname === '/bill-scan' ? null : <PillNav />}
+          {HIDDEN_NAV_ROUTES.has(pathname) ? null : <PillNav />}
         </View>
       </ToastProvider>
     </GestureHandlerRootView>
