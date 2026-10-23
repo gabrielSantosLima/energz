@@ -8,6 +8,7 @@ export const en = {
     done: 'Done',
     delete: 'Delete',
     selected: '{{count}} selected',
+    undo: 'Undo',
   },
   nav: {
     home: 'Home',
@@ -109,6 +110,9 @@ export const en = {
     deleteConfirmMessage: 'This permanently deletes the selected bills.',
     deleted: 'Bill deleted',
     deletedMany: '{{count}} bills deleted',
+    endCycle: 'Create cycle end measurement',
+    cycleEnded: 'Cycle end measurement created',
+    cycleUndone: 'Cycle end measurement undone',
   },
   agent: {
     title: 'AI Agent',

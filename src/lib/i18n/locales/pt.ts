@@ -8,6 +8,7 @@ export const pt = {
     done: 'Concluir',
     delete: 'Excluir',
     selected: '{{count}} selecionados',
+    undo: 'Desfazer',
   },
   nav: {
     home: 'Início',
@@ -109,6 +110,9 @@ export const pt = {
     deleteConfirmMessage: 'Isso exclui permanentemente as contas selecionadas.',
     deleted: 'Conta excluída',
     deletedMany: '{{count}} contas excluídas',
+    endCycle: 'Criar medição de fim de ciclo',
+    cycleEnded: 'Medição de fim de ciclo criada',
+    cycleUndone: 'Medição de fim de ciclo desfeita',
   },
   agent: {
     title: 'Agente de IA',

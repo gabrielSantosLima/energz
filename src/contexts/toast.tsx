@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,14 +17,20 @@ import { radius, spacing } from '@/theme';
 
 type ToastVariant = 'success' | 'error' | 'info';
 
+type ToastAction = {
+  label: string;
+  onPress: () => void;
+};
+
 type Toast = {
   id: number;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
 };
 
 type ToastContextValue = {
-  show: (message: string, variant?: ToastVariant) => void;
+  show: (message: string, variant?: ToastVariant, action?: ToastAction) => void;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -56,13 +62,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     if (!toast) {
       return;
     }
-    const timer = setTimeout(() => setToast(null), 2600);
+    const timer = setTimeout(
+      () => setToast(null),
+      toast.action ? 5000 : 2600,
+    );
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const show = useCallback((message: string, variant: ToastVariant = 'info') => {
-    setToast({ id: Date.now(), message, variant });
-  }, []);
+  const show = useCallback(
+    (
+      message: string,
+      variant: ToastVariant = 'info',
+      action?: ToastAction,
+    ) => {
+      setToast({ id: Date.now(), message, variant, action });
+    },
+    [],
+  );
 
   const tint = toast
     ? toast.variant === 'success'
@@ -80,7 +96,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           key={toast.id}
           entering={FadeInDown.duration(180)}
           exiting={FadeOutUp.duration(150)}
-          pointerEvents="none"
+          pointerEvents={toast.action ? 'auto' : 'none'}
           style={[styles.wrapper, { top: insets.top + spacing.sm }]}>
           <View
             style={[
@@ -91,6 +107,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <Text variant="bodyStrong" style={styles.message}>
               {toast.message}
             </Text>
+            {toast.action ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  toast.action?.onPress();
+                  setToast(null);
+                }}>
+                <Text variant="label" color="primary">
+                  {toast.action.label}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </Animated.View>
       ) : null}

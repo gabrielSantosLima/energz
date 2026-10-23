@@ -31,6 +31,14 @@ import {
 } from '@/lib/format';
 import { radius, spacing } from '@/theme';
 
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 type Tab = 'measurements' | 'bills';
 
 export default function MeasurementsScreen() {
@@ -49,12 +57,14 @@ export default function MeasurementsScreen() {
     refresh: refreshBills,
     reload: reloadBills,
   } = useEnergyBills();
-  const { deleteMeasurements } = useMeasurementActions();
+  const { createMeasurement, deleteMeasurement, deleteMeasurements } =
+    useMeasurementActions();
   const { deleteEnergyBills } = useEnergyBillActions();
   const { cycles } = useCycles();
 
   const tab: Tab = params.tab === 'bills' ? 'bills' : 'measurements';
   const [cycleFilter, setCycleFilter] = useState('all');
+  const [endingBillId, setEndingBillId] = useState<string | null>(null);
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -227,21 +237,52 @@ export default function MeasurementsScreen() {
     );
   };
 
+  const endBillCycle = async (bill: EnergyBill) => {
+    if (endingBillId) {
+      return;
+    }
+
+    setEndingBillId(bill.id);
+    try {
+      const created = await createMeasurement({
+        measuredAt: bill.readingDate ?? bill.createdAt,
+        consumption: bill.activeKwh,
+        production: bill.injectedKwh,
+        endsCycle: true,
+        restart: false,
+      });
+      await reload();
+      toast.show(t('bills.cycleEnded'), 'success', {
+        label: t('common.undo'),
+        onPress: () => {
+          void (async () => {
+            await deleteMeasurement(created.id);
+            await reload();
+            toast.show(t('bills.cycleUndone'), 'info');
+          })();
+        },
+      });
+    } catch (error) {
+      toast.show(
+        error instanceof Error ? error.message : String(error),
+        'error',
+      );
+    } finally {
+      setEndingBillId(null);
+    }
+  };
+
   const renderBill = ({ item }: { item: EnergyBill }) => {
     const selected = selectedIds.includes(item.id);
+    const billDate = item.readingDate ?? item.createdAt;
+    const hasCycleEnd = measurements.some(
+      (measurement) =>
+        measurement.endsCycle && isSameDay(measurement.measuredAt, billDate),
+    );
+    const showEndCycle = !selecting && !hasCycleEnd;
 
     return (
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => {
-          if (selecting) {
-            toggle(item.id);
-          } else {
-            router.push({ pathname: '/bill-review', params: { id: item.id } });
-          }
-        }}
-        onLongPress={() => startSelection(item.id)}
-        delayLongPress={250}
+      <View
         style={[
           styles.row,
           {
@@ -249,59 +290,83 @@ export default function MeasurementsScreen() {
             borderColor: selected ? colors.primary : colors.border,
           },
         ]}>
-        <View style={styles.rowHeader}>
-          <Text variant="subtitle">
-            {item.readingDate
-              ? formatDate(item.readingDate, locale)
-              : t('bills.noDate')}
-          </Text>
-          {selecting ? (
-            <View
-              style={[
-                styles.check,
-                {
-                  borderColor: selected ? colors.primary : colors.border,
-                  backgroundColor: selected ? colors.primary : 'transparent',
-                },
-              ]}>
-              {selected ? (
-                <SymbolView
-                  name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                  size={14}
-                  tintColor={colors.onPrimary}
-                />
-              ) : null}
-            </View>
-          ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            if (selecting) {
+              toggle(item.id);
+            } else {
+              router.push({ pathname: '/bill-review', params: { id: item.id } });
+            }
+          }}
+          onLongPress={() => startSelection(item.id)}
+          delayLongPress={250}
+          style={styles.billBody}>
+          <View style={styles.rowHeader}>
             <Text variant="subtitle">
-              {formatCurrency(item.amountCents, locale)}
+              {item.readingDate
+                ? formatDate(item.readingDate, locale)
+                : t('bills.noDate')}
             </Text>
-          )}
-        </View>
+            {selecting ? (
+              <View
+                style={[
+                  styles.check,
+                  {
+                    borderColor: selected ? colors.primary : colors.border,
+                    backgroundColor: selected ? colors.primary : 'transparent',
+                  },
+                ]}>
+                {selected ? (
+                  <SymbolView
+                    name={{ ios: 'checkmark', android: 'check', web: 'check' }}
+                    size={14}
+                    tintColor={colors.onPrimary}
+                  />
+                ) : null}
+              </View>
+            ) : (
+              <Text variant="subtitle">
+                {formatCurrency(item.amountCents, locale)}
+              </Text>
+            )}
+          </View>
 
-      {item.distributor ? (
-        <Text variant="caption" color="textSecondary">
-          {item.distributor}
-        </Text>
-      ) : null}
+          {item.distributor ? (
+            <Text variant="caption" color="textSecondary">
+              {item.distributor}
+            </Text>
+          ) : null}
 
-      <View style={styles.metrics}>
-        <View style={styles.metric}>
-          <Text variant="caption" color="textTertiary">
-            {t('bills.active')}
-          </Text>
-          <Text variant="bodyStrong">{formatEnergy(item.activeKwh, locale)}</Text>
-        </View>
-        <View style={styles.metric}>
-          <Text variant="caption" color="textTertiary">
-            {t('bills.injected')}
-          </Text>
-          <Text variant="bodyStrong">
-            {formatEnergy(item.injectedKwh, locale)}
-          </Text>
-        </View>
+          <View style={styles.metrics}>
+            <View style={styles.metric}>
+              <Text variant="caption" color="textTertiary">
+                {t('bills.active')}
+              </Text>
+              <Text variant="bodyStrong">
+                {formatEnergy(item.activeKwh, locale)}
+              </Text>
+            </View>
+            <View style={styles.metric}>
+              <Text variant="caption" color="textTertiary">
+                {t('bills.injected')}
+              </Text>
+              <Text variant="bodyStrong">
+                {formatEnergy(item.injectedKwh, locale)}
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+
+        {showEndCycle ? (
+          <Button
+            label={t('bills.endCycle')}
+            variant="secondary"
+            onPress={() => endBillCycle(item)}
+            disabled={endingBillId === item.id}
+          />
+        ) : null}
       </View>
-      </Pressable>
     );
   };
 
@@ -462,6 +527,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
   },
+  billBody: { gap: spacing.md },
   rowHeader: {
     flexDirection: 'row',
     alignItems: 'center',
