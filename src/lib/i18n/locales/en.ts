@@ -38,7 +38,7 @@ export const en = {
     },
   },
   measurements: {
-    title: 'Bills & Measurements',
+    title: 'Bills &\nMeasurements',
     tabs: {
       measurements: 'Measurements',
       bills: 'Bills',
@@ -111,6 +111,7 @@ export const en = {
     empty: 'No bills yet',
     emptyHint: 'Scan a bill to see it here.',
     scan: 'Scan bill',
+    addManual: 'Add bill manually',
     deleteConfirmTitle: 'Delete bills',
     deleteConfirmMessage: 'This permanently deletes the selected bills.',
     deleted: 'Bill deleted',
@@ -221,6 +222,7 @@ export const en = {
   billReview: {
     title: 'Review bill',
     editTitle: 'Edit bill',
+    newTitle: 'New bill',
     subtitle: 'Confirm the data extracted from the bill.',
     notFound: 'Bill not found.',
     updated: 'Bill updated',

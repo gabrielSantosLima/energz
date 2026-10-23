@@ -85,6 +85,7 @@ type FormProps = {
   imageUri: string | null;
   parserNotice: string | null;
   parseError: string | null;
+  manual?: boolean;
 };
 
 function BillReviewForm({
@@ -93,6 +94,7 @@ function BillReviewForm({
   imageUri,
   parserNotice,
   parseError,
+  manual = false,
 }: FormProps) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -144,6 +146,7 @@ function BillReviewForm({
       injectedKwh: injectedKwhValue,
       charges: initial.charges,
       flag: flag.trim() || null,
+      source: manual ? ('manual' as const) : ('agent' as const),
     };
 
     try {
@@ -228,7 +231,11 @@ function BillReviewForm({
           </Pressable>
           <View style={styles.headerText}>
             <Text variant="title">
-              {editing ? t('billReview.editTitle') : t('billReview.title')}
+              {editing
+                ? t('billReview.editTitle')
+                : manual
+                  ? t('billReview.newTitle')
+                  : t('billReview.title')}
             </Text>
             <Text variant="caption" color="textSecondary">
               {t('billReview.subtitle')}
@@ -380,11 +387,12 @@ function BillReviewForm({
 export default function BillReviewScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; manual?: string }>();
   const { bill, loading } = useEnergyBill(params.id);
   const scan = useBillScanStore((state) => state.scan);
   const draft = useBillDraftStore((state) => state.draft);
   const parseError = useBillDraftStore((state) => state.parseError);
+  const manual = params.manual === '1';
 
   if (params.id) {
     if (loading) {
@@ -414,6 +422,19 @@ export default function BillReviewScreen() {
         imageUri={null}
         parserNotice={null}
         parseError={null}
+      />
+    );
+  }
+
+  if (manual) {
+    return (
+      <BillReviewForm
+        key="manual"
+        initial={EMPTY_DRAFT}
+        imageUri={null}
+        parserNotice={null}
+        parseError={null}
+        manual
       />
     );
   }

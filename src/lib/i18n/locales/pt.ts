@@ -38,7 +38,7 @@ export const pt = {
     },
   },
   measurements: {
-    title: 'Contas e Medições',
+    title: 'Contas e\nMedições',
     tabs: {
       measurements: 'Medições',
       bills: 'Contas',
@@ -111,6 +111,7 @@ export const pt = {
     empty: 'Nenhuma conta ainda',
     emptyHint: 'Escaneie uma conta para vê-la aqui.',
     scan: 'Escanear conta',
+    addManual: 'Adicionar conta manualmente',
     deleteConfirmTitle: 'Excluir contas',
     deleteConfirmMessage: 'Isso exclui permanentemente as contas selecionadas.',
     deleted: 'Conta excluída',
@@ -221,6 +222,7 @@ export const pt = {
   billReview: {
     title: 'Revisar conta',
     editTitle: 'Editar conta',
+    newTitle: 'Nova conta',
     subtitle: 'Confirme os dados extraídos da conta.',
     notFound: 'Conta não encontrada.',
     updated: 'Conta atualizada',

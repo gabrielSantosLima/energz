@@ -381,27 +381,50 @@ export default function MeasurementsScreen() {
       ) : (
         <View style={styles.header}>
           <Text variant="title">{t('measurements.title')}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              tab === 'bills' ? t('bills.scan') : t('measurements.add')
-            }
-            onPress={tab === 'bills' ? openNewBill : openNew}
-            style={[styles.addButton, { backgroundColor: colors.primary }]}>
-            <SymbolView
-              name={
-                tab === 'bills'
-                  ? {
-                      ios: 'doc.viewfinder',
-                      android: 'document_scanner',
-                      web: 'document_scanner',
-                    }
-                  : { ios: 'plus', android: 'add', web: 'add' }
+          <View style={styles.headerActions}>
+            {tab === 'bills' ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('bills.addManual')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/bill-review',
+                    params: { manual: '1' },
+                  })
+                }
+                style={[
+                  styles.addButton,
+                  { backgroundColor: colors.surfaceMuted },
+                ]}>
+                <SymbolView
+                  name={{ ios: 'plus', android: 'add', web: 'add' }}
+                  size={22}
+                  tintColor={colors.primary}
+                />
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                tab === 'bills' ? t('bills.scan') : t('measurements.add')
               }
-              size={22}
-              tintColor={colors.onPrimary}
-            />
-          </Pressable>
+              onPress={tab === 'bills' ? openNewBill : openNew}
+              style={[styles.addButton, { backgroundColor: colors.primary }]}>
+              <SymbolView
+                name={
+                  tab === 'bills'
+                    ? {
+                        ios: 'doc.viewfinder',
+                        android: 'document_scanner',
+                        web: 'document_scanner',
+                      }
+                    : { ios: 'plus', android: 'add', web: 'add' }
+                }
+                size={22}
+                tintColor={colors.onPrimary}
+              />
+            </Pressable>
+          </View>
         </View>
       )}
 
@@ -504,6 +527,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   addButton: {
     width: 44,

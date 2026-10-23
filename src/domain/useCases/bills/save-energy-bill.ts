@@ -1,6 +1,10 @@
 import { injectable } from 'tsyringe';
 
-import type { BillCharge, EnergyBill } from '@/domain/entities/energy-bill';
+import type {
+  BillCharge,
+  EnergyBill,
+  EnergyBillSource,
+} from '@/domain/entities/energy-bill';
 import { EnergyBillRepository } from '@/domain/services/energy-bill-repository';
 import { IdGenerator } from '@/domain/services/id-generator';
 
@@ -12,6 +16,7 @@ export type SaveEnergyBillInput = {
   injectedKwh: number | null;
   charges: BillCharge[];
   flag: string | null;
+  source?: EnergyBillSource;
 };
 
 export class IncompleteBillError extends Error {
@@ -47,7 +52,7 @@ export class SaveEnergyBillUseCase {
       injectedKwh: input.injectedKwh,
       charges: input.charges,
       flag: input.flag,
-      source: 'agent',
+      source: input.source ?? 'agent',
       createdAt: now,
       updatedAt: now,
     };
