@@ -1,8 +1,19 @@
 package expo.modules.billscanner
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import com.google.android.gms.tasks.Tasks
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -41,6 +52,10 @@ class ProcessOptions : Record {
 }
 
 class BillScannerModule : Module() {
+  companion object {
+    private const val SCAN_REQUEST_CODE = 45123
+  }
+
   private val context: Context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
 
@@ -48,11 +63,102 @@ class BillScannerModule : Module() {
     OpenCVLoader.initLocal()
   }
 
+  private var pendingScan: Promise? = null
+
   override fun definition() = ModuleDefinition {
     Name("BillScanner")
 
     AsyncFunction("processBill") { options: ProcessOptions ->
       process(options)
+    }
+
+    AsyncFunction("recognizeText") { uri: String ->
+      recognizeText(uri)
+    }
+
+    AsyncFunction("scanDocument") { promise: Promise ->
+      startDocumentScan(promise)
+    }
+
+    OnActivityResult { _, payload ->
+      handleScanResult(payload.requestCode, payload.resultCode, payload.data)
+    }
+  }
+
+  private fun startDocumentScan(promise: Promise) {
+    if (pendingScan != null) {
+      promise.reject("ERR_SCAN_IN_PROGRESS", "A document scan is already running.", null)
+      return
+    }
+
+    val activity = appContext.currentActivity
+    if (activity == null) {
+      promise.reject("ERR_NO_ACTIVITY", "No current activity.", null)
+      return
+    }
+
+    val options = GmsDocumentScannerOptions.Builder()
+      .setGalleryImportAllowed(true)
+      .setPageLimit(1)
+      .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+      .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+      .build()
+    val scanner = GmsDocumentScanning.getClient(options)
+
+    val intentSender = try {
+      Tasks.await(scanner.getStartScanIntent(activity))
+    } catch (error: Exception) {
+      promise.reject("ERR_SCAN_START", error.message ?: "Could not start the document scanner.", error)
+      return
+    }
+
+    pendingScan = promise
+    activity.runOnUiThread {
+      try {
+        activity.startIntentSenderForResult(intentSender, SCAN_REQUEST_CODE, null, 0, 0, 0)
+      } catch (error: Exception) {
+        pendingScan = null
+        promise.reject("ERR_SCAN_START", error.message ?: "Could not start the document scanner.", error)
+      }
+    }
+  }
+
+  private fun handleScanResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (requestCode != SCAN_REQUEST_CODE) {
+      return
+    }
+
+    val promise = pendingScan ?: return
+    pendingScan = null
+
+    if (resultCode != Activity.RESULT_OK || data == null) {
+      promise.resolve(mapOf("uri" to "", "pageCount" to 0))
+      return
+    }
+
+    try {
+      val result = GmsDocumentScanningResult.fromActivityResultIntent(data)
+      val pages = result?.pages ?: emptyList()
+      val uri = pages.firstOrNull()?.imageUri?.toString() ?: ""
+      promise.resolve(mapOf("uri" to uri, "pageCount" to pages.size))
+    } catch (error: Exception) {
+      promise.reject("ERR_SCAN_RESULT", error.message ?: "Could not read the scan result.", error)
+    }
+  }
+
+  private fun recognizeText(uri: String): String {
+    if (uri.isEmpty()) {
+      throw IllegalArgumentException("The image uri is required.")
+    }
+
+    val image = InputImage.fromFilePath(context, Uri.parse(uri))
+    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+    try {
+      val result = Tasks.await(recognizer.process(image))
+      return result.text
+    } finally {
+      recognizer.close()
     }
   }
 
@@ -65,7 +171,7 @@ class BillScannerModule : Module() {
       throw IllegalArgumentException("The image uri is required.")
     }
 
-    val bitmap = BitmapFactory.decodeFile(toPath(options.uri))
+    val bitmap = decodeBitmap(options.uri)
       ?: throw IllegalArgumentException("Could not decode the bill image.")
     val source = Mat()
     Utils.bitmapToMat(bitmap, source)
@@ -331,5 +437,16 @@ class BillScannerModule : Module() {
     }
 
     return uri
+  }
+
+  private fun decodeBitmap(uri: String): Bitmap? {
+    val parsed = Uri.parse(uri)
+    if (parsed.scheme == "content") {
+      return context.contentResolver.openInputStream(parsed)?.use { input ->
+        BitmapFactory.decodeStream(input)
+      }
+    }
+
+    return BitmapFactory.decodeFile(toPath(uri))
   }
 }

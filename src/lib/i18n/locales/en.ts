@@ -144,7 +144,7 @@ export const en = {
     clear: 'Clear',
     original: 'Original image',
     processed: 'Processed image',
-    rawText: 'OCR text',
+    rawText: 'OCR text (ML Kit)',
     process: 'Process',
     detected: 'document detected',
   },
@@ -155,5 +155,6 @@ export const en = {
     processing: 'Processing...',
     flashOn: 'Turn flash on',
     flashOff: 'Turn flash off',
+    googleScanner: 'Google Scanner',
   },
 };

@@ -144,7 +144,7 @@ export const pt = {
     clear: 'Limpar',
     original: 'Imagem original',
     processed: 'Imagem processada',
-    rawText: 'Texto do OCR',
+    rawText: 'Texto do OCR (ML Kit)',
     process: 'Processamento',
     detected: 'documento detectado',
   },
@@ -155,5 +155,6 @@ export const pt = {
     processing: 'Processando...',
     flashOn: 'Ligar flash',
     flashOff: 'Desligar flash',
+    googleScanner: 'Scanner do Google',
   },
 };

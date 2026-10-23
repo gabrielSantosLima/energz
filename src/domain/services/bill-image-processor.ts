@@ -1,4 +1,3 @@
-import * as FileSystem from 'expo-file-system/legacy';
 import { injectable } from 'tsyringe';
 
 import BillScanner, {
@@ -11,19 +10,24 @@ export class BillImageProcessor {
   async enhance(
     uri: string,
     crop: BillCropRect,
-  ): Promise<{ uri: string; base64: string; detected: boolean; result: ProcessBillResult }> {
+    detect = true,
+  ): Promise<{ uri: string; detected: boolean; result: ProcessBillResult }> {
     const result = await BillScanner.processBill({
       uri,
       crop,
       maxDimension: 2000,
       margin: 0.08,
-      detect: true,
+      detect,
     });
 
-    const base64 = await FileSystem.readAsStringAsync(result.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    return { uri: result.uri, detected: result.detected, result };
+  }
 
-    return { uri: result.uri, base64, detected: result.detected, result };
+  async recognizeText(uri: string): Promise<string> {
+    return BillScanner.recognizeText(uri);
+  }
+
+  async scanDocument(): Promise<{ uri: string; pageCount: number }> {
+    return BillScanner.scanDocument();
   }
 }

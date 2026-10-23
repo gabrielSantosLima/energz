@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { OcrWebView } from '@/components/bill/ocr-webview';
 import { Text } from '@/components/ui/text';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { useInjection } from '@/hooks/use-injection';
@@ -22,7 +21,6 @@ import { useDevStore } from '@/store/dev-store';
 import { radius, spacing } from '@/theme';
 
 const PREVIEW_ASPECT = 3 / 4;
-const OCR_LANG = 'por';
 
 export default function BillScanScreen() {
   const { colors } = useTheme();
@@ -30,12 +28,10 @@ export default function BillScanScreen() {
   const insets = useSafeAreaInsets();
   const processor = useInjection(BillImageProcessor);
   const cameraRef = useRef<CameraView>(null);
-  const ocrStartedAt = useRef(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [ocrBase64, setOcrBase64] = useState<string | null>(null);
   const [viewSize, setViewSize] = useState({ width: 0, height: 0 });
   const [guideRect, setGuideRect] = useState({
     x: 0,
@@ -67,6 +63,26 @@ export default function BillScanScreen() {
     setGuideRect({ x, y, width, height });
   };
 
+  const processAndRecognize = async (
+    sourceUri: string,
+    crop: { x: number; y: number; width: number; height: number },
+    detect: boolean,
+  ) => {
+    const startedAt = Date.now();
+    const processed = await processor.enhance(sourceUri, crop, detect);
+    setScan({
+      processedUri: processed.uri,
+      processMs: Date.now() - startedAt,
+      detected: processed.detected,
+    });
+
+    const ocrStartedAt = Date.now();
+    const text = await processor.recognizeText(processed.uri);
+    setScan({ rawText: text, ocrMs: Date.now() - ocrStartedAt });
+    setProcessing(false);
+    router.replace('/dev');
+  };
+
   const capture = async () => {
     if (!cameraRef.current || !cameraReady || processing) {
       return;
@@ -84,26 +100,35 @@ export default function BillScanScreen() {
         { width: photo.width, height: photo.height },
       );
       setScan({ originalUri: photo.uri });
-      const startedAt = Date.now();
-      const processed = await processor.enhance(photo.uri, crop);
-      setScan({
-        processedUri: processed.uri,
-        processMs: Date.now() - startedAt,
-        detected: processed.detected,
-      });
-      ocrStartedAt.current = Date.now();
-      setOcrBase64(processed.base64);
+      await processAndRecognize(photo.uri, crop, true);
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });
       setProcessing(false);
     }
   };
 
-  const finishOcr = (text: string) => {
-    setScan({ rawText: text, ocrMs: Date.now() - ocrStartedAt.current });
-    setProcessing(false);
-    setOcrBase64(null);
-    router.replace('/dev');
+  const scanWithGoogle = async () => {
+    if (processing) {
+      return;
+    }
+    setProcessing(true);
+    resetScan();
+    try {
+      const scanned = await processor.scanDocument();
+      if (!scanned.uri) {
+        setProcessing(false);
+        return;
+      }
+      setScan({ originalUri: scanned.uri });
+      await processAndRecognize(
+        scanned.uri,
+        { x: 0, y: 0, width: 0, height: 0 },
+        false,
+      );
+    } catch (error) {
+      setScan({ error: error instanceof Error ? error.message : String(error) });
+      setProcessing(false);
+    }
   };
 
   if (!permission) {
@@ -188,28 +213,34 @@ export default function BillScanScreen() {
             ) : null}
           </View>
         ) : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('billScan.capture')}
-            onPress={capture}
-            style={styles.shutter}
-          />
+          <>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('billScan.googleScanner')}
+              onPress={scanWithGoogle}
+              style={styles.googleScanner}>
+              <SymbolView
+                name={{
+                  ios: 'doc.viewfinder',
+                  android: 'document_scanner',
+                  web: 'document_scanner',
+                }}
+                size={20}
+                tintColor="#FFFFFF"
+              />
+              <Text variant="label" style={styles.whiteText}>
+                {t('billScan.googleScanner')}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('billScan.capture')}
+              onPress={capture}
+              style={styles.shutter}
+            />
+          </>
         )}
       </View>
-
-      {ocrBase64 ? (
-        <OcrWebView
-          imageBase64={ocrBase64}
-          lang={OCR_LANG}
-          onResult={finishOcr}
-          onError={(message) => {
-            setScan({ error: message });
-            setProcessing(false);
-            setOcrBase64(null);
-            router.replace('/dev');
-          }}
-        />
-      ) : null}
     </View>
   );
 }
@@ -264,6 +295,16 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     alignItems: 'center',
+    gap: spacing.lg,
+  },
+  googleScanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    height: 44,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   shutter: {
     width: 72,
