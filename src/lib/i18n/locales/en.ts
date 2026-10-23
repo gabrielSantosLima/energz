@@ -207,7 +207,10 @@ export const en = {
   },
   billReview: {
     title: 'Review bill',
+    editTitle: 'Edit bill',
     subtitle: 'Confirm the data extracted from the bill.',
+    notFound: 'Bill not found.',
+    updated: 'Bill updated',
     parserNotice: 'Review the data extracted by the AI agent before saving.',
     parseError: 'The AI could not parse this bill. Fill the fields manually.',
     amount: 'Total amount (R$)',

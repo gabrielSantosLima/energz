@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,12 +17,26 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextInput } from '@/components/ui/text-input';
 import { useToast } from '@/contexts/toast';
-import { useEnergyBillActions } from '@/hooks/use-energy-bills';
+import type { BillDraft, EnergyBill } from '@/domain/entities/energy-bill';
+import {
+  useEnergyBill,
+  useEnergyBillActions,
+} from '@/hooks/use-energy-bills';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { useBillDraftStore } from '@/store/bill-draft-store';
 import { useBillScanStore } from '@/store/bill-scan-store';
 import { radius, spacing } from '@/theme';
+
+const EMPTY_DRAFT: BillDraft = {
+  distributor: null,
+  readingDate: null,
+  amountCents: null,
+  activeKwh: null,
+  injectedKwh: null,
+  charges: [],
+  flag: null,
+};
 
 function parseDecimal(value: string): number | null {
   const normalized = value.trim().replace(',', '.');
@@ -41,28 +56,62 @@ function parseDate(value: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export default function BillReviewScreen() {
+function toDateInput(date: Date | null): string {
+  if (!date) {
+    return '';
+  }
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function billToDraft(bill: EnergyBill): BillDraft {
+  return {
+    distributor: bill.distributor,
+    readingDate: toDateInput(bill.readingDate),
+    amountCents: bill.amountCents,
+    activeKwh: bill.activeKwh,
+    injectedKwh: bill.injectedKwh,
+    charges: bill.charges,
+    flag: bill.flag,
+  };
+}
+
+type FormProps = {
+  initial: BillDraft;
+  billId?: string;
+  imageUri: string | null;
+  parserNotice: string | null;
+  parseError: string | null;
+};
+
+function BillReviewForm({
+  initial,
+  billId,
+  imageUri,
+  parserNotice,
+  parseError,
+}: FormProps) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { saveEnergyBill } = useEnergyBillActions();
-  const scan = useBillScanStore((state) => state.scan);
-  const draft = useBillDraftStore((state) => state.draft);
-  const parseError = useBillDraftStore((state) => state.parseError);
+  const { saveEnergyBill, updateEnergyBill } = useEnergyBillActions();
+  const editing = Boolean(billId);
 
   const [amount, setAmount] = useState(
-    draft?.amountCents != null ? (draft.amountCents / 100).toFixed(2) : '',
+    initial.amountCents != null ? (initial.amountCents / 100).toFixed(2) : '',
   );
   const [activeKwh, setActiveKwh] = useState(
-    draft?.activeKwh != null ? String(draft.activeKwh) : '',
+    initial.activeKwh != null ? String(initial.activeKwh) : '',
   );
   const [injectedKwh, setInjectedKwh] = useState(
-    draft?.injectedKwh != null ? String(draft.injectedKwh) : '',
+    initial.injectedKwh != null ? String(initial.injectedKwh) : '',
   );
-  const [date, setDate] = useState(draft?.readingDate ?? '');
-  const [distributor, setDistributor] = useState(draft?.distributor ?? '');
-  const [flag, setFlag] = useState(draft?.flag ?? '');
+  const [date, setDate] = useState(initial.readingDate ?? '');
+  const [distributor, setDistributor] = useState(initial.distributor ?? '');
+  const [flag, setFlag] = useState(initial.flag ?? '');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -85,17 +134,24 @@ export default function BillReviewScreen() {
 
     setSaving(true);
     setSaveError(null);
+    const input = {
+      distributor: distributor.trim() || null,
+      readingDate: parseDate(date),
+      amountCents,
+      activeKwh: activeKwhValue,
+      injectedKwh: injectedKwhValue,
+      charges: initial.charges,
+      flag: flag.trim() || null,
+    };
+
     try {
-      await saveEnergyBill({
-        distributor: distributor.trim() || null,
-        readingDate: parseDate(date),
-        amountCents,
-        activeKwh: activeKwhValue,
-        injectedKwh: injectedKwhValue,
-        charges: draft?.charges ?? [],
-        flag: flag.trim() || null,
-      });
-      toast.show(t('billReview.saved'), 'success');
+      if (billId) {
+        await updateEnergyBill(billId, input);
+        toast.show(t('billReview.updated'), 'success');
+      } else {
+        await saveEnergyBill(input);
+        toast.show(t('billReview.saved'), 'success');
+      }
       router.replace({ pathname: '/measurements', params: { tab: 'bills' } });
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : String(error));
@@ -135,16 +191,18 @@ export default function BillReviewScreen() {
             />
           </Pressable>
           <View style={styles.headerText}>
-            <Text variant="title">{t('billReview.title')}</Text>
+            <Text variant="title">
+              {editing ? t('billReview.editTitle') : t('billReview.title')}
+            </Text>
             <Text variant="caption" color="textSecondary">
               {t('billReview.subtitle')}
             </Text>
           </View>
         </View>
 
-        {scan.processedUri ? (
+        {imageUri ? (
           <Image
-            source={{ uri: scan.processedUri }}
+            source={{ uri: imageUri }}
             style={[
               styles.image,
               { borderColor: colors.border, backgroundColor: colors.surfaceMuted },
@@ -153,15 +211,17 @@ export default function BillReviewScreen() {
           />
         ) : null}
 
-        <View
-          style={[
-            styles.notice,
-            { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
-          ]}>
-          <Text variant="caption" color="textSecondary">
-            {t('billReview.parserNotice')}
-          </Text>
-        </View>
+        {parserNotice ? (
+          <View
+            style={[
+              styles.notice,
+              { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+            ]}>
+            <Text variant="caption" color="textSecondary">
+              {parserNotice}
+            </Text>
+          </View>
+        ) : null}
 
         {parseError ? (
           <View
@@ -228,13 +288,13 @@ export default function BillReviewScreen() {
           <Text variant="label" color="textSecondary">
             {t('billReview.charges')}
           </Text>
-          {draft && draft.charges.length > 0 ? (
+          {initial.charges.length > 0 ? (
             <View
               style={[
                 styles.chargesEmpty,
                 { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
               ]}>
-              {draft.charges.map((charge, index) => (
+              {initial.charges.map((charge, index) => (
                 <View key={`${charge.label}-${index}`} style={styles.chargeRow}>
                   <Text variant="caption" style={styles.chargeLabel}>
                     {charge.label}
@@ -273,8 +333,66 @@ export default function BillReviewScreen() {
   );
 }
 
+export default function BillReviewScreen() {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { bill, loading } = useEnergyBill(params.id);
+  const scan = useBillScanStore((state) => state.scan);
+  const draft = useBillDraftStore((state) => state.draft);
+  const parseError = useBillDraftStore((state) => state.parseError);
+
+  if (params.id) {
+    if (loading) {
+      return (
+        <View style={[styles.flex, styles.center, { backgroundColor: colors.background }]}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      );
+    }
+
+    if (!bill) {
+      return (
+        <View style={[styles.flex, styles.center, { backgroundColor: colors.background }]}>
+          <Text variant="body" color="textSecondary">
+            {t('billReview.notFound')}
+          </Text>
+          <Button label={t('common.back')} onPress={() => router.back()} />
+        </View>
+      );
+    }
+
+    return (
+      <BillReviewForm
+        key={bill.id}
+        initial={billToDraft(bill)}
+        billId={bill.id}
+        imageUri={null}
+        parserNotice={null}
+        parseError={null}
+      />
+    );
+  }
+
+  return (
+    <BillReviewForm
+      key="new"
+      initial={draft ?? EMPTY_DRAFT}
+      imageUri={scan.processedUri}
+      parserNotice={t('billReview.parserNotice')}
+      parseError={parseError}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+    padding: spacing.xl,
+  },
   content: { gap: spacing.md },
   header: {
     flexDirection: 'row',

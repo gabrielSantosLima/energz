@@ -207,7 +207,10 @@ export const pt = {
   },
   billReview: {
     title: 'Revisar conta',
+    editTitle: 'Editar conta',
     subtitle: 'Confirme os dados extraídos da conta.',
+    notFound: 'Conta não encontrada.',
+    updated: 'Conta atualizada',
     parserNotice: 'Revise os dados extraídos pelo agente de IA antes de salvar.',
     parseError: 'A IA não conseguiu interpretar esta conta. Preencha os campos manualmente.',
     amount: 'Valor total (R$)',

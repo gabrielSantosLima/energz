@@ -2,11 +2,13 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import type { EnergyBill } from '@/domain/entities/energy-bill';
+import { GetEnergyBillUseCase } from '@/domain/useCases/bills/get-energy-bill';
 import { ListEnergyBillsUseCase } from '@/domain/useCases/bills/list-energy-bills';
 import {
   SaveEnergyBillUseCase,
   type SaveEnergyBillInput,
 } from '@/domain/useCases/bills/save-energy-bill';
+import { UpdateEnergyBillUseCase } from '@/domain/useCases/bills/update-energy-bill';
 import { useInjection } from '@/hooks/use-injection';
 
 export function useEnergyBills() {
@@ -48,11 +50,51 @@ export function useEnergyBills() {
 
 export function useEnergyBillActions() {
   const save = useInjection(SaveEnergyBillUseCase);
+  const update = useInjection(UpdateEnergyBillUseCase);
 
   const saveEnergyBill = useCallback(
     (input: SaveEnergyBillInput) => save.execute(input),
     [save],
   );
 
-  return { saveEnergyBill };
+  const updateEnergyBill = useCallback(
+    (id: string, input: SaveEnergyBillInput) => update.execute(id, input),
+    [update],
+  );
+
+  return { saveEnergyBill, updateEnergyBill };
+}
+
+export function useEnergyBill(id: string | undefined) {
+  const get = useInjection(GetEnergyBillUseCase);
+  const [bill, setBill] = useState<EnergyBill | null>(null);
+  const [loading, setLoading] = useState(Boolean(id));
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      if (!id) {
+        setBill(null);
+        setLoading(false);
+        return () => {
+          active = false;
+        };
+      }
+
+      setLoading(true);
+      void get.execute(id).then((result) => {
+        if (active) {
+          setBill(result);
+          setLoading(false);
+        }
+      });
+
+      return () => {
+        active = false;
+      };
+    }, [get, id]),
+  );
+
+  return { bill, loading };
 }

@@ -89,6 +89,26 @@ export class EnergyBillRepository {
     );
   }
 
+  async update(bill: EnergyBill): Promise<void> {
+    const db = await this.database.get();
+    await db.runAsync(
+      `UPDATE energy_bills
+       SET distributor = ?, reading_date = ?, amount_cents = ?, active_kwh = ?,
+           injected_kwh = ?, charges_json = ?, flag = ?, source = ?, updated_at = ?
+       WHERE id = ?`,
+      bill.distributor,
+      bill.readingDate?.getTime() ?? null,
+      bill.amountCents,
+      bill.activeKwh,
+      bill.injectedKwh,
+      JSON.stringify(bill.charges),
+      bill.flag,
+      bill.source,
+      bill.updatedAt.getTime(),
+      bill.id,
+    );
+  }
+
   async delete(id: string): Promise<void> {
     const db = await this.database.get();
     await db.runAsync('DELETE FROM energy_bills WHERE id = ?', id);

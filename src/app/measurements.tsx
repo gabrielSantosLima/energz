@@ -208,7 +208,11 @@ export default function MeasurementsScreen() {
   };
 
   const renderBill = ({ item }: { item: EnergyBill }) => (
-    <View
+    <Pressable
+      accessibilityRole="button"
+      onPress={() =>
+        router.push({ pathname: '/bill-review', params: { id: item.id } })
+      }
       style={[
         styles.row,
         { backgroundColor: colors.surface, borderColor: colors.border },
@@ -246,7 +250,7 @@ export default function MeasurementsScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 
   return (
