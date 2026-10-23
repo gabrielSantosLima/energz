@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { container } from 'tsyringe';
 
+import { AgentSettingsStorage } from '@/domain/services/agent-settings-storage';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { ImageCapturer } from '@/domain/services/image-capturer';
@@ -10,6 +11,8 @@ import { NotificationService } from '@/domain/services/notification-service';
 import { NotificationSettingsStorage } from '@/domain/services/notification-settings-storage';
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { ReportExporter } from '@/domain/services/report-exporter';
+import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
+import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
 import { DeleteCyclesUseCase } from '@/domain/useCases/cycles/delete-cycles';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
 import { ListCyclesUseCase } from '@/domain/useCases/cycles/list-cycles';
@@ -35,12 +38,16 @@ container.registerSingleton(MeasurementRepository);
 container.registerSingleton(IdGenerator);
 container.registerSingleton(NotificationService);
 container.registerSingleton(BillImageProcessor);
+container.registerSingleton(AgentSettingsStorage);
 container.registerSingleton(ReportExporter);
 container.registerSingleton(ImageCapturer);
 
 container.registerSingleton(GetPreferencesUseCase);
 container.registerSingleton(SetLocaleUseCase);
 container.registerSingleton(SetThemePreferenceUseCase);
+
+container.registerSingleton(GetAgentSettingsUseCase);
+container.registerSingleton(SaveAgentSettingsUseCase);
 
 container.registerSingleton(GetNotificationSettingsUseCase);
 container.registerSingleton(SetMeasurementReminderEnabledUseCase);

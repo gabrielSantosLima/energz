@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { NotificationSection } from '@/components/settings/notification-section';
@@ -6,6 +7,7 @@ import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
+import { useAgentSettings } from '@/hooks/use-agent-settings';
 import { useDevMode } from '@/hooks/use-dev-mode';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
@@ -19,6 +21,7 @@ export default function SettingsScreen() {
   const toast = useToast();
   const { devMode, disableDevMode } = useDevMode();
   const { theme, locale, setTheme, setLocale } = usePreferences();
+  const { configured } = useAgentSettings();
 
   return (
     <Screen scroll>
@@ -54,6 +57,20 @@ export default function SettingsScreen() {
       </View>
 
       <NotificationSection />
+
+      <View style={styles.section}>
+        <Text variant="label" color="textSecondary">
+          {t('settings.ai.title')}
+        </Text>
+        <Text variant="caption" color="textTertiary">
+          {configured ? t('settings.ai.configured') : t('settings.ai.missing')}
+        </Text>
+        <Button
+          label={t('settings.ai.configure')}
+          variant="secondary"
+          onPress={() => router.push('/agent-settings')}
+        />
+      </View>
 
       {devMode ? (
         <View style={styles.section}>

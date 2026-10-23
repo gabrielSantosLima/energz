@@ -100,6 +100,25 @@ export const pt = {
     title: 'Agente de IA',
     message: 'Esta funcionalidade está em desenvolvimento.',
   },
+  agentSetup: {
+    title: 'Nenhuma IA configurada',
+    message:
+      'Esta funcionalidade precisa de um provedor de IA. A configuração é feita apenas uma vez.',
+    configure: 'Configurar',
+  },
+  agentSettings: {
+    title: 'Provedor de IA',
+    subtitle: 'Provedor usado pelas funcionalidades de IA do app.',
+    notice:
+      'Sua chave de API fica armazenada com segurança neste dispositivo e só é enviada ao provedor nas requisições de IA.',
+    providerName: 'Nome do provedor',
+    apiKey: 'Chave de API',
+    apiKeyPlaceholder: 'Informe sua chave de API',
+    model: 'Modelo',
+    save: 'Salvar',
+    saved: 'Provedor de IA configurado',
+    required: 'Preencha o nome do provedor e a chave de API.',
+  },
   settings: {
     title: 'Configurações',
     version: 'Versão',
@@ -113,6 +132,12 @@ export const pt = {
       label: 'Idioma',
       en: 'Inglês',
       pt: 'Português',
+    },
+    ai: {
+      title: 'IA',
+      configured: 'Provedor de IA configurado.',
+      missing: 'Nenhum provedor de IA configurado.',
+      configure: 'Configurar provedor de IA',
     },
     notifications: {
       title: 'Notificações',

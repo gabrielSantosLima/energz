@@ -1,0 +1,37 @@
+import { router } from 'expo-router';
+import { useCallback } from 'react';
+import { Alert } from 'react-native';
+
+import { useAgentSettings } from '@/hooks/use-agent-settings';
+import { useTranslation } from '@/hooks/use-translation';
+
+export function useAgentSetup(): (onReady: () => void) => void {
+  const { t } = useTranslation();
+  const { configured, hydrated } = useAgentSettings();
+
+  return useCallback(
+    (onReady: () => void) => {
+      if (!hydrated) {
+        return;
+      }
+
+      if (configured) {
+        onReady();
+        return;
+      }
+
+      Alert.alert(
+        t('agentSetup.title'),
+        t('agentSetup.message'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('agentSetup.configure'),
+            onPress: () => router.push('/agent-settings'),
+          },
+        ],
+      );
+    },
+    [configured, hydrated, t],
+  );
+}

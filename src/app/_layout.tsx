@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/contexts/container';
 import { ToastProvider } from '@/contexts/toast';
 import { PillNav } from '@/components/ui/pill-nav';
+import { useAgentSettings } from '@/hooks/use-agent-settings';
 import { useNotificationObserver } from '@/hooks/use-notification-observer';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
@@ -41,6 +42,7 @@ const HIDDEN_NAV_ROUTES = new Set([
   '/bill-scan',
   '/bill-preview',
   '/bill-review',
+  '/agent-settings',
 ]);
 
 export default function RootLayout() {
@@ -54,6 +56,7 @@ export default function RootLayout() {
   const { colors } = useTheme();
   const pathname = usePathname();
 
+  useAgentSettings();
   useNotificationObserver();
 
   const ready = fontsLoaded && hydrated;

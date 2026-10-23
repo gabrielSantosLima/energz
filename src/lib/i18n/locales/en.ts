@@ -100,6 +100,25 @@ export const en = {
     title: 'AI Agent',
     message: 'This feature is under development.',
   },
+  agentSetup: {
+    title: 'No AI configured',
+    message:
+      'This feature requires an AI provider. You only need to set it up once.',
+    configure: 'Configure',
+  },
+  agentSettings: {
+    title: 'AI provider',
+    subtitle: 'Provider used by the app AI features.',
+    notice:
+      'Your API key is stored securely on this device and is only sent to the provider in AI requests.',
+    providerName: 'Provider name',
+    apiKey: 'API key',
+    apiKeyPlaceholder: 'Enter your API key',
+    model: 'Model',
+    save: 'Save',
+    saved: 'AI provider configured',
+    required: 'Fill in the provider name and API key.',
+  },
   settings: {
     title: 'Settings',
     version: 'Version',
@@ -113,6 +132,12 @@ export const en = {
       label: 'Language',
       en: 'English',
       pt: 'Portuguese',
+    },
+    ai: {
+      title: 'AI',
+      configured: 'AI provider configured.',
+      missing: 'No AI provider configured.',
+      configure: 'Configure AI provider',
     },
     notifications: {
       title: 'Notifications',

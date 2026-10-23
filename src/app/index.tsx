@@ -13,6 +13,7 @@ import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
 import { buildIntervals } from '@/domain/entities/measurement';
+import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
 import { useDevMode } from '@/hooks/use-dev-mode';
 import { useMeasurements } from '@/hooks/use-measurements';
@@ -29,12 +30,14 @@ type Feature = {
   href?: Href;
   badge?: string;
   tags?: FeatureTag[];
+  usesAgent?: boolean;
 };
 
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const toast = useToast();
+  const requireAgentSetup = useAgentSetup();
   const { devMode, enableDevMode } = useDevMode();
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -137,6 +140,7 @@ export default function DashboardScreen() {
       icon: { ios: 'bolt', android: 'bolt', web: 'bolt' },
       href: '/bill-scan',
       tags: ['ai', 'new'],
+      usesAgent: true,
     },
     {
       key: 'cycles',
@@ -244,7 +248,18 @@ export default function DashboardScreen() {
               disabled={disabled}
               accessibilityRole="button"
               accessibilityState={{ disabled }}
-              onPress={feature.href ? () => router.push(feature.href as Href) : undefined}
+              onPress={
+                feature.href
+                  ? () => {
+                      const href = feature.href as Href;
+                      if (feature.usesAgent) {
+                        requireAgentSetup(() => router.push(href));
+                      } else {
+                        router.push(href);
+                      }
+                    }
+                  : undefined
+              }
               style={[
                 styles.row,
                 index > 0 && {
