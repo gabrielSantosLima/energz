@@ -25,15 +25,24 @@ if (!globalWithShims.process) {
   globalWithShims.process.env = {};
 }
 
-const cryptoObject: CryptoLike = globalWithShims.crypto ?? {};
+const existingCrypto = globalWithShims.crypto;
+const cryptoObject: CryptoLike = existingCrypto ?? {};
 
 if (typeof cryptoObject.getRandomValues !== 'function') {
-  cryptoObject.getRandomValues = (array) =>
-    ExpoCrypto.getRandomValues(array);
+  cryptoObject.getRandomValues = (array) => ExpoCrypto.getRandomValues(array);
 }
 
 if (typeof cryptoObject.randomUUID !== 'function') {
   cryptoObject.randomUUID = () => ExpoCrypto.randomUUID();
 }
 
-globalWithShims.crypto = cryptoObject;
+if (!existingCrypto) {
+  try {
+    globalWithShims.crypto = cryptoObject;
+  } catch {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: cryptoObject,
+      configurable: true,
+    });
+  }
+}
