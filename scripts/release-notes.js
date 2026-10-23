@@ -11,17 +11,18 @@ function readArg(name, fallback = null) {
   return fallback;
 }
 
-function git(command) {
+function git(command, args = []) {
   return execSync(command, {
     encoding: "utf8",
     cwd: ROOT,
     stdio: ["ignore", "pipe", "ignore"],
+    args: args,
   }).trim();
 }
 
 function latestTag() {
   try {
-    return git("git describe --tags --abbrev=0");
+    return git("git", ["describe", "--tags", "--abbrev=0"]);
   } catch {
     return "";
   }
@@ -41,7 +42,7 @@ const date = new Date().toISOString().slice(0, 10);
 const range = from ? `${from}..${to}` : to;
 let entries = [];
 try {
-  entries = git(`git log --no-merges --pretty=format:%h%x09%s ${range}`)
+  entries = git("git", ["log", "--no-merges", "--pretty=format:%h%x09%s", range])
     .split("\n")
     .filter(Boolean)
     .map((line) => {
