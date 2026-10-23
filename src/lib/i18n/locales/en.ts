@@ -24,6 +24,11 @@ export const en = {
     emptyHint: 'Add your first measurement to see your metrics.',
     chartTitle: 'Consumption vs production',
     chartEmpty: 'Add more measurements to see the chart.',
+    billHistory: 'Bill history',
+    billForecast: 'Current bill forecast',
+    billForecastHint: 'Based on {{count}} past bills',
+    billHistoryEmpty: 'Close a cycle and add its bill to see the history.',
+    noBill: 'No bill',
     features: {
       measurements: 'Bills & Measurements',
       reports: 'Reports',

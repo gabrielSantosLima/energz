@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CycleSelector } from '@/components/cycles/cycle-selector';
+import { BillHistoryCard } from '@/components/dashboard/bill-history-card';
 import { CycleChart } from '@/components/dashboard/cycle-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { MetricCardSkeleton } from '@/components/dashboard/metric-card-skeleton';
@@ -16,6 +17,7 @@ import { buildIntervals } from '@/domain/entities/measurement';
 import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
 import { useDevMode } from '@/hooks/use-dev-mode';
+import { useEnergyBills } from '@/hooks/use-energy-bills';
 import { useMeasurements } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -53,15 +55,22 @@ export default function DashboardScreen() {
     refreshing: measurementsRefreshing,
     refresh: refreshMeasurements,
   } = useMeasurements();
+  const {
+    bills,
+    refreshing: billsRefreshing,
+    refresh: refreshBills,
+  } = useEnergyBills();
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
 
   const loading = cyclesLoading || measurementsLoading;
-  const refreshing = cyclesRefreshing || measurementsRefreshing;
+  const refreshing =
+    cyclesRefreshing || measurementsRefreshing || billsRefreshing;
 
   const refresh = useCallback(() => {
     void refreshCycles();
     void refreshMeasurements();
-  }, [refreshCycles, refreshMeasurements]);
+    void refreshBills();
+  }, [refreshCycles, refreshMeasurements, refreshBills]);
 
   const currentCycle =
     cycles.find((cycle) => !cycle.closed) ?? cycles[cycles.length - 1] ?? null;
@@ -322,6 +331,8 @@ export default function DashboardScreen() {
           );
         })}
       </View>
+
+      <BillHistoryCard cycles={cycles} bills={bills} />
 
       <CycleChart
         key={selected?.id ?? 'none'}

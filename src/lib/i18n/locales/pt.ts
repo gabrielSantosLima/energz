@@ -24,6 +24,11 @@ export const pt = {
     emptyHint: 'Adicione sua primeira medição para ver as métricas.',
     chartTitle: 'Consumo vs produção',
     chartEmpty: 'Adicione mais medições para ver o gráfico.',
+    billHistory: 'Histórico de contas',
+    billForecast: 'Previsão da conta atual',
+    billForecastHint: 'Baseada em {{count}} contas passadas',
+    billHistoryEmpty: 'Encerre um ciclo e adicione a conta para ver o histórico.',
+    noBill: 'Sem conta',
     features: {
       measurements: 'Contas e Medições',
       reports: 'Relatórios',
