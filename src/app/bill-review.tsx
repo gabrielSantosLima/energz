@@ -4,6 +4,7 @@ import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -97,7 +98,8 @@ function BillReviewForm({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { saveEnergyBill, updateEnergyBill } = useEnergyBillActions();
+  const { saveEnergyBill, updateEnergyBill, deleteEnergyBill } =
+    useEnergyBillActions();
   const editing = Boolean(billId);
 
   const [amount, setAmount] = useState(
@@ -158,6 +160,40 @@ function BillReviewForm({
     } finally {
       setSaving(false);
     }
+  };
+
+  const confirmDelete = () => {
+    if (!billId) {
+      return;
+    }
+
+    Alert.alert(
+      t('bills.deleteConfirmTitle'),
+      t('bills.deleteConfirmMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              try {
+                await deleteEnergyBill(billId);
+                toast.show(t('bills.deleted'), 'success');
+                router.replace({
+                  pathname: '/measurements',
+                  params: { tab: 'bills' },
+                });
+              } catch (error) {
+                setSaveError(
+                  error instanceof Error ? error.message : String(error),
+                );
+              }
+            })();
+          },
+        },
+      ],
+    );
   };
 
   const padding = {
@@ -328,6 +364,14 @@ function BillReviewForm({
         <Text variant="caption" color="textTertiary" style={styles.saveHint}>
           {t('billReview.saveHint')}
         </Text>
+
+        {billId ? (
+          <Button
+            label={t('common.delete')}
+            onPress={confirmDelete}
+            variant="danger"
+          />
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

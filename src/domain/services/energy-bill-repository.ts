@@ -113,4 +113,17 @@ export class EnergyBillRepository {
     const db = await this.database.get();
     await db.runAsync('DELETE FROM energy_bills WHERE id = ?', id);
   }
+
+  async deleteMany(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    const db = await this.database.get();
+    const placeholders = ids.map(() => '?').join(', ');
+    await db.runAsync(
+      `DELETE FROM energy_bills WHERE id IN (${placeholders})`,
+      ...ids,
+    );
+  }
 }

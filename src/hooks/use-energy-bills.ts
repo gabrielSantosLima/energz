@@ -2,6 +2,8 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import type { EnergyBill } from '@/domain/entities/energy-bill';
+import { DeleteEnergyBillUseCase } from '@/domain/useCases/bills/delete-energy-bill';
+import { DeleteEnergyBillsUseCase } from '@/domain/useCases/bills/delete-energy-bills';
 import { GetEnergyBillUseCase } from '@/domain/useCases/bills/get-energy-bill';
 import { ListEnergyBillsUseCase } from '@/domain/useCases/bills/list-energy-bills';
 import {
@@ -51,6 +53,8 @@ export function useEnergyBills() {
 export function useEnergyBillActions() {
   const save = useInjection(SaveEnergyBillUseCase);
   const update = useInjection(UpdateEnergyBillUseCase);
+  const remove = useInjection(DeleteEnergyBillUseCase);
+  const removeMany = useInjection(DeleteEnergyBillsUseCase);
 
   const saveEnergyBill = useCallback(
     (input: SaveEnergyBillInput) => save.execute(input),
@@ -62,7 +66,22 @@ export function useEnergyBillActions() {
     [update],
   );
 
-  return { saveEnergyBill, updateEnergyBill };
+  const deleteEnergyBill = useCallback(
+    (id: string) => remove.execute(id),
+    [remove],
+  );
+
+  const deleteEnergyBills = useCallback(
+    (ids: string[]) => removeMany.execute(ids),
+    [removeMany],
+  );
+
+  return {
+    saveEnergyBill,
+    updateEnergyBill,
+    deleteEnergyBill,
+    deleteEnergyBills,
+  };
 }
 
 export function useEnergyBill(id: string | undefined) {

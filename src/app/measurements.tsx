@@ -16,7 +16,10 @@ import type { EnergyBill } from '@/domain/entities/energy-bill';
 import type { Measurement } from '@/domain/entities/measurement';
 import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
-import { useEnergyBills } from '@/hooks/use-energy-bills';
+import {
+  useEnergyBillActions,
+  useEnergyBills,
+} from '@/hooks/use-energy-bills';
 import { useMeasurementActions, useMeasurements } from '@/hooks/use-measurements';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -44,8 +47,10 @@ export default function MeasurementsScreen() {
     refreshing: billsRefreshing,
     error: billsError,
     refresh: refreshBills,
+    reload: reloadBills,
   } = useEnergyBills();
   const { deleteMeasurements } = useMeasurementActions();
+  const { deleteEnergyBills } = useEnergyBillActions();
   const { cycles } = useCycles();
 
   const tab: Tab = params.tab === 'bills' ? 'bills' : 'measurements';
@@ -114,24 +119,39 @@ export default function MeasurementsScreen() {
     if (selectedIds.length === 0) {
       return;
     }
+
+    const deletingBills = tab === 'bills';
+    const ids = selectedIds;
+
     Alert.alert(
-      t('measurements.form.deleteConfirmTitle'),
-      t('measurements.form.deleteConfirmMessage'),
+      deletingBills
+        ? t('bills.deleteConfirmTitle')
+        : t('measurements.form.deleteConfirmTitle'),
+      deletingBills
+        ? t('bills.deleteConfirmMessage')
+        : t('measurements.form.deleteConfirmMessage'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
           text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
-            const count = selectedIds.length;
+            const count = ids.length;
             void (async () => {
-              await deleteMeasurements(selectedIds);
-              await reload();
+              if (deletingBills) {
+                await deleteEnergyBills(ids);
+                await reloadBills();
+              } else {
+                await deleteMeasurements(ids);
+                await reload();
+              }
               cancelSelection();
               toast.show(
                 count === 1
-                  ? t('measurements.deleted')
-                  : t('measurements.deletedMany', { count }),
+                  ? t(deletingBills ? 'bills.deleted' : 'measurements.deleted')
+                  : t(deletingBills ? 'bills.deletedMany' : 'measurements.deletedMany', {
+                      count,
+                    }),
                 'success',
               );
             })();
@@ -207,26 +227,57 @@ export default function MeasurementsScreen() {
     );
   };
 
-  const renderBill = ({ item }: { item: EnergyBill }) => (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() =>
-        router.push({ pathname: '/bill-review', params: { id: item.id } })
-      }
-      style={[
-        styles.row,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-      ]}>
-      <View style={styles.rowHeader}>
-        <Text variant="subtitle">
-          {item.readingDate
-            ? formatDate(item.readingDate, locale)
-            : t('bills.noDate')}
-        </Text>
-        <Text variant="subtitle">
-          {formatCurrency(item.amountCents, locale)}
-        </Text>
-      </View>
+  const renderBill = ({ item }: { item: EnergyBill }) => {
+    const selected = selectedIds.includes(item.id);
+
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          if (selecting) {
+            toggle(item.id);
+          } else {
+            router.push({ pathname: '/bill-review', params: { id: item.id } });
+          }
+        }}
+        onLongPress={() => startSelection(item.id)}
+        delayLongPress={250}
+        style={[
+          styles.row,
+          {
+            backgroundColor: colors.surface,
+            borderColor: selected ? colors.primary : colors.border,
+          },
+        ]}>
+        <View style={styles.rowHeader}>
+          <Text variant="subtitle">
+            {item.readingDate
+              ? formatDate(item.readingDate, locale)
+              : t('bills.noDate')}
+          </Text>
+          {selecting ? (
+            <View
+              style={[
+                styles.check,
+                {
+                  borderColor: selected ? colors.primary : colors.border,
+                  backgroundColor: selected ? colors.primary : 'transparent',
+                },
+              ]}>
+              {selected ? (
+                <SymbolView
+                  name={{ ios: 'checkmark', android: 'check', web: 'check' }}
+                  size={14}
+                  tintColor={colors.onPrimary}
+                />
+              ) : null}
+            </View>
+          ) : (
+            <Text variant="subtitle">
+              {formatCurrency(item.amountCents, locale)}
+            </Text>
+          )}
+        </View>
 
       {item.distributor ? (
         <Text variant="caption" color="textSecondary">
@@ -250,8 +301,9 @@ export default function MeasurementsScreen() {
           </Text>
         </View>
       </View>
-    </Pressable>
-  );
+      </Pressable>
+    );
+  };
 
   return (
     <Screen>

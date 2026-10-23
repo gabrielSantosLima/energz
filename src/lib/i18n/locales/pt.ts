@@ -105,6 +105,10 @@ export const pt = {
     empty: 'Nenhuma conta ainda',
     emptyHint: 'Escaneie uma conta para vê-la aqui.',
     scan: 'Escanear conta',
+    deleteConfirmTitle: 'Excluir contas',
+    deleteConfirmMessage: 'Isso exclui permanentemente as contas selecionadas.',
+    deleted: 'Conta excluída',
+    deletedMany: '{{count}} contas excluídas',
   },
   agent: {
     title: 'Agente de IA',

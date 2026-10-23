@@ -16,6 +16,8 @@ import { ReportExporter } from '@/domain/services/report-exporter';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
 import { ParseEnergyBillUseCase } from '@/domain/useCases/agents/parse-energy-bill';
 import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
+import { DeleteEnergyBillUseCase } from '@/domain/useCases/bills/delete-energy-bill';
+import { DeleteEnergyBillsUseCase } from '@/domain/useCases/bills/delete-energy-bills';
 import { GetEnergyBillUseCase } from '@/domain/useCases/bills/get-energy-bill';
 import { ListEnergyBillsUseCase } from '@/domain/useCases/bills/list-energy-bills';
 import { SaveEnergyBillUseCase } from '@/domain/useCases/bills/save-energy-bill';
@@ -73,6 +75,8 @@ container.registerSingleton(ListEnergyBillsUseCase);
 container.registerSingleton(GetEnergyBillUseCase);
 container.registerSingleton(SaveEnergyBillUseCase);
 container.registerSingleton(UpdateEnergyBillUseCase);
+container.registerSingleton(DeleteEnergyBillUseCase);
+container.registerSingleton(DeleteEnergyBillsUseCase);
 
 container.registerSingleton(ListCyclesUseCase);
 container.registerSingleton(GetCycleDetailUseCase);

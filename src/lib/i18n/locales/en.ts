@@ -105,6 +105,10 @@ export const en = {
     empty: 'No bills yet',
     emptyHint: 'Scan a bill to see it here.',
     scan: 'Scan bill',
+    deleteConfirmTitle: 'Delete bills',
+    deleteConfirmMessage: 'This permanently deletes the selected bills.',
+    deleted: 'Bill deleted',
+    deletedMany: '{{count}} bills deleted',
   },
   agent: {
     title: 'AI Agent',
