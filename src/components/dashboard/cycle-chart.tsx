@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -34,6 +34,30 @@ type Series = {
 
 const ITEM_WIDTH = 76;
 const GRAPH_PADDING = 8;
+const GRAPH_PADDING_VALUES = {
+  left: GRAPH_PADDING,
+  right: GRAPH_PADDING,
+  top: GRAPH_PADDING,
+  bottom: GRAPH_PADDING,
+};
+const SCROLL_THROTTLE_MS = 50;
+
+const WheelItem = memo(function WheelItem({
+  label,
+  active,
+}: {
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <View style={styles.wheelItem}>
+      <Text variant="label" color={active ? 'textPrimary' : 'textTertiary'}>
+        {label}
+      </Text>
+    </View>
+  );
+});
+
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
@@ -54,6 +78,7 @@ export function CycleChart({ cycle, measurements }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const userScrolling = useRef(false);
+  const lastScrollUpdate = useRef(0);
 
   const series = useMemo<Series>(() => {
     if (!cycle) {
@@ -92,24 +117,52 @@ export function CycleChart({ cycle, measurements }: Props) {
   const xMax = series.consumption[lastIndex]?.date.getTime() ?? 0;
   const hasData = count >= 2 && xMax > xMin;
 
-  const scrollToLast = () => {
+  const wheelLabels = useMemo(
+    () =>
+      series.consumption.map((point) => formatShortDate(point.date, locale)),
+    [series.consumption, locale],
+  );
+
+  const scrollToLast = useCallback(() => {
     if (lastIndex < 0) {
       return;
     }
     scrollRef.current?.scrollTo({ x: lastIndex * ITEM_WIDTH, animated: false });
     setSelectedIndex(lastIndex);
-  };
+  }, [lastIndex]);
 
-  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (!userScrolling.current) {
-      return;
-    }
-    const raw = Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH);
-    const clamped = Math.min(Math.max(raw, 0), Math.max(lastIndex, 0));
-    if (clamped !== activeIndex) {
-      setSelectedIndex(clamped);
-    }
-  };
+  const syncIndex = useCallback(
+    (offsetX: number) => {
+      const raw = Math.round(offsetX / ITEM_WIDTH);
+      const clamped = Math.min(Math.max(raw, 0), Math.max(lastIndex, 0));
+      setSelectedIndex((current) => (current === clamped ? current : clamped));
+    },
+    [lastIndex],
+  );
+
+  const onScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!userScrolling.current) {
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastScrollUpdate.current < SCROLL_THROTTLE_MS) {
+        return;
+      }
+      lastScrollUpdate.current = now;
+      syncIndex(event.nativeEvent.contentOffset.x);
+    },
+    [syncIndex],
+  );
+
+  const onScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      userScrolling.current = false;
+      syncIndex(event.nativeEvent.contentOffset.x);
+    },
+    [syncIndex],
+  );
 
   const activeConsumption = series.consumption[activeIndex];
   const activeProduction = series.production[activeIndex];
@@ -146,12 +199,7 @@ export function CycleChart({ cycle, measurements }: Props) {
             <GraphPlot
               width={size.width}
               height={size.height}
-              padding={{
-                left: GRAPH_PADDING,
-                right: GRAPH_PADDING,
-                top: GRAPH_PADDING,
-                bottom: GRAPH_PADDING,
-              }}
+              padding={GRAPH_PADDING_VALUES}
               consumption={series.consumption}
               production={series.production}
               activeIndex={activeIndex}
@@ -183,25 +231,22 @@ export function CycleChart({ cycle, measurements }: Props) {
             onScroll={onScroll}
             onScrollBeginDrag={() => {
               userScrolling.current = true;
+              lastScrollUpdate.current = 0;
             }}
+            onScrollEndDrag={onScrollEnd}
+            onMomentumScrollEnd={onScrollEnd}
             onContentSizeChange={scrollToLast}
-            scrollEventThrottle={16}
+            scrollEventThrottle={32}
             contentContainerStyle={{
               paddingHorizontal: Math.max(0, (wheelWidth - ITEM_WIDTH) / 2),
             }}>
-            {series.consumption.map((point, index) => {
-              const active = index === activeIndex;
-
-              return (
-                <View key={index} style={styles.wheelItem}>
-                  <Text
-                    variant="label"
-                    color={active ? 'textPrimary' : 'textTertiary'}>
-                    {formatShortDate(point.date, locale)}
-                  </Text>
-                </View>
-              );
-            })}
+            {wheelLabels.map((label, index) => (
+              <WheelItem
+                key={index}
+                label={label}
+                active={index === activeIndex}
+              />
+            ))}
           </ScrollView>
           <View
             pointerEvents="none"
