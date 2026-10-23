@@ -11,7 +11,7 @@ export const en = {
   },
   nav: {
     home: 'Home',
-    measurements: 'Measurements',
+    measurements: 'Bills & Measurements',
     reports: 'Reports',
     settings: 'Settings',
   },
@@ -24,7 +24,7 @@ export const en = {
     chartTitle: 'Consumption vs production',
     chartEmpty: 'Add more measurements to see the chart.',
     features: {
-      measurements: 'Measurements',
+      measurements: 'Bills & Measurements',
       reports: 'Reports',
       bills: 'Analyze energy bills',
       cycles: 'My cycles',
@@ -32,7 +32,11 @@ export const en = {
     },
   },
   measurements: {
-    title: 'Measurements',
+    title: 'Bills & Measurements',
+    tabs: {
+      measurements: 'Measurements',
+      bills: 'Bills',
+    },
     add: 'Add measurement',
     empty: 'No measurements yet',
     emptyHint: 'Add your first meter reading to start tracking.',
@@ -95,6 +99,12 @@ export const en = {
   bills: {
     title: 'Analyze energy bills',
     message: 'This feature is under development.',
+    noDate: 'No date',
+    active: 'En Ativa',
+    injected: 'En Injetado',
+    empty: 'No bills yet',
+    emptyHint: 'Scan a bill to see it here.',
+    scan: 'Scan bill',
   },
   agent: {
     title: 'AI Agent',
@@ -209,6 +219,7 @@ export const en = {
     charges: 'Charges',
     chargesEmpty: 'Discounts and additions will appear here.',
     save: 'Save bill',
-    saveHint: 'Saving will be enabled with the parser agent.',
+    saved: 'Bill saved',
+    saveHint: 'Total, En Ativa and En Injetado are required.',
   },
 };

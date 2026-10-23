@@ -4,6 +4,8 @@ import { container } from 'tsyringe';
 
 import { AgentSettingsStorage } from '@/domain/services/agent-settings-storage';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
+import { Database } from '@/domain/services/database';
+import { EnergyBillRepository } from '@/domain/services/energy-bill-repository';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { ImageCapturer } from '@/domain/services/image-capturer';
 import { MeasurementRepository } from '@/domain/services/measurement-repository';
@@ -14,6 +16,8 @@ import { ReportExporter } from '@/domain/services/report-exporter';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
 import { ParseEnergyBillUseCase } from '@/domain/useCases/agents/parse-energy-bill';
 import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
+import { ListEnergyBillsUseCase } from '@/domain/useCases/bills/list-energy-bills';
+import { SaveEnergyBillUseCase } from '@/domain/useCases/bills/save-energy-bill';
 import { DeleteCyclesUseCase } from '@/domain/useCases/cycles/delete-cycles';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
 import { ListCyclesUseCase } from '@/domain/useCases/cycles/list-cycles';
@@ -33,9 +37,11 @@ import { ExportReportImageUseCase } from '@/domain/useCases/reports/export-repor
 import { ExportReportPdfUseCase } from '@/domain/useCases/reports/export-report-pdf';
 import { GenerateReportUseCase } from '@/domain/useCases/reports/generate-report';
 
+container.registerSingleton(Database);
 container.registerSingleton(PreferencesStorage);
 container.registerSingleton(NotificationSettingsStorage);
 container.registerSingleton(MeasurementRepository);
+container.registerSingleton(EnergyBillRepository);
 container.registerSingleton(IdGenerator);
 container.registerSingleton(NotificationService);
 container.registerSingleton(BillImageProcessor);
@@ -60,6 +66,9 @@ container.registerSingleton(CreateMeasurementUseCase);
 container.registerSingleton(UpdateMeasurementUseCase);
 container.registerSingleton(DeleteMeasurementUseCase);
 container.registerSingleton(DeleteMeasurementsUseCase);
+
+container.registerSingleton(ListEnergyBillsUseCase);
+container.registerSingleton(SaveEnergyBillUseCase);
 
 container.registerSingleton(ListCyclesUseCase);
 container.registerSingleton(GetCycleDetailUseCase);

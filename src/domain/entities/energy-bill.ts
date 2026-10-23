@@ -15,3 +15,22 @@ export interface BillDraft {
   charges: BillCharge[];
   flag: string | null;
 }
+
+export type EnergyBillSource = 'agent' | 'manual';
+
+export interface EnergyBillInput {
+  distributor: string | null;
+  readingDate: Date | null;
+  amountCents: number;
+  activeKwh: number;
+  injectedKwh: number;
+  charges: BillCharge[];
+  flag: string | null;
+  source: EnergyBillSource;
+}
+
+export interface EnergyBill extends EnergyBillInput {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

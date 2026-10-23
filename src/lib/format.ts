@@ -36,3 +36,10 @@ export function formatNumber(
 export function formatEnergy(value: number, locale: Locale): string {
   return `${formatNumber(value, locale)} kWh`;
 }
+
+export function formatCurrency(cents: number, locale: Locale): string {
+  return new Intl.NumberFormat(intlLocale[locale], {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(cents / 100);
+}

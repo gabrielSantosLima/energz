@@ -11,7 +11,7 @@ export const pt = {
   },
   nav: {
     home: 'Início',
-    measurements: 'Medições',
+    measurements: 'Contas e Medições',
     reports: 'Relatórios',
     settings: 'Configurações',
   },
@@ -24,7 +24,7 @@ export const pt = {
     chartTitle: 'Consumo vs produção',
     chartEmpty: 'Adicione mais medições para ver o gráfico.',
     features: {
-      measurements: 'Medições',
+      measurements: 'Contas e Medições',
       reports: 'Relatórios',
       bills: 'Analisar contas de energia',
       cycles: 'Meus ciclos',
@@ -32,7 +32,11 @@ export const pt = {
     },
   },
   measurements: {
-    title: 'Medições',
+    title: 'Contas e Medições',
+    tabs: {
+      measurements: 'Medições',
+      bills: 'Contas',
+    },
     add: 'Adicionar medição',
     empty: 'Nenhuma medição ainda',
     emptyHint: 'Adicione a primeira leitura do medidor para começar.',
@@ -95,6 +99,12 @@ export const pt = {
   bills: {
     title: 'Analisar contas de energia',
     message: 'Esta funcionalidade está em desenvolvimento.',
+    noDate: 'Sem data',
+    active: 'En Ativa',
+    injected: 'En Injetado',
+    empty: 'Nenhuma conta ainda',
+    emptyHint: 'Escaneie uma conta para vê-la aqui.',
+    scan: 'Escanear conta',
   },
   agent: {
     title: 'Agente de IA',
@@ -209,6 +219,7 @@ export const pt = {
     charges: 'Itens da conta',
     chargesEmpty: 'Descontos e adicionais aparecerão aqui.',
     save: 'Salvar conta',
-    saveHint: 'O salvamento será ativado com o agente de parsing.',
+    saved: 'Conta salva',
+    saveHint: 'Total, En Ativa e En Injetado são obrigatórios.',
   },
 };
