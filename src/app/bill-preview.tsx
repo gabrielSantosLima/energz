@@ -8,9 +8,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
+import { useBillParser } from '@/hooks/use-bill-parser';
 import { useInjection } from '@/hooks/use-injection';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { useBillDraftStore } from '@/store/bill-draft-store';
 import { useBillScanStore } from '@/store/bill-scan-store';
 import { useDevStore } from '@/store/dev-store';
 import { radius, spacing } from '@/theme';
@@ -20,6 +22,8 @@ export default function BillPreviewScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const processor = useInjection(BillImageProcessor);
+  const { parse } = useBillParser();
+  const resetDraft = useBillDraftStore((state) => state.resetDraft);
   const scan = useBillScanStore((state) => state.scan);
   const setScan = useBillScanStore((state) => state.setScan);
   const devMode = useDevStore((state) => state.devMode);
@@ -31,10 +35,14 @@ export default function BillPreviewScreen() {
     }
     setProcessing(true);
     setScan({ error: null });
+    resetDraft();
     try {
       const startedAt = Date.now();
       const text = await processor.recognizeText(scan.processedUri);
       setScan({ rawText: text, ocrMs: Date.now() - startedAt });
+      if (!devMode) {
+        await parse(text);
+      }
       router.push(devMode ? '/dev' : '/bill-review');
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });

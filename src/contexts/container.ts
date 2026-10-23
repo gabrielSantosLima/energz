@@ -12,6 +12,7 @@ import { NotificationSettingsStorage } from '@/domain/services/notification-sett
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { ReportExporter } from '@/domain/services/report-exporter';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
+import { ParseEnergyBillUseCase } from '@/domain/useCases/agents/parse-energy-bill';
 import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
 import { DeleteCyclesUseCase } from '@/domain/useCases/cycles/delete-cycles';
 import { GetCycleDetailUseCase } from '@/domain/useCases/cycles/get-cycle-detail';
@@ -48,6 +49,7 @@ container.registerSingleton(SetThemePreferenceUseCase);
 
 container.registerSingleton(GetAgentSettingsUseCase);
 container.registerSingleton(SaveAgentSettingsUseCase);
+container.registerSingleton(ParseEnergyBillUseCase);
 
 container.registerSingleton(GetNotificationSettingsUseCase);
 container.registerSingleton(SetMeasurementReminderEnabledUseCase);

@@ -17,6 +17,7 @@ import { Text } from '@/components/ui/text';
 import { TextInput } from '@/components/ui/text-input';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { useBillDraftStore } from '@/store/bill-draft-store';
 import { useBillScanStore } from '@/store/bill-scan-store';
 import { radius, spacing } from '@/theme';
 
@@ -25,16 +26,21 @@ export default function BillReviewScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const scan = useBillScanStore((state) => state.scan);
+  const draft = useBillDraftStore((state) => state.draft);
+  const parseError = useBillDraftStore((state) => state.parseError);
 
-  const [amount, setAmount] = useState('');
-  const [activeKwh, setActiveKwh] = useState('');
-  const [injectedKwh, setInjectedKwh] = useState('');
-  const [date, setDate] = useState('');
-  const [distributor, setDistributor] = useState('');
-  const [competence, setCompetence] = useState('');
-  const [unitCode, setUnitCode] = useState('');
-  const [flag, setFlag] = useState('');
-  const [accessKey, setAccessKey] = useState('');
+  const [amount, setAmount] = useState(
+    draft?.amountCents != null ? (draft.amountCents / 100).toFixed(2) : '',
+  );
+  const [activeKwh, setActiveKwh] = useState(
+    draft?.activeKwh != null ? String(draft.activeKwh) : '',
+  );
+  const [injectedKwh, setInjectedKwh] = useState(
+    draft?.injectedKwh != null ? String(draft.injectedKwh) : '',
+  );
+  const [date, setDate] = useState(draft?.readingDate ?? '');
+  const [distributor, setDistributor] = useState(draft?.distributor ?? '');
+  const [flag, setFlag] = useState(draft?.flag ?? '');
 
   const padding = {
     paddingTop: insets.top + spacing.lg,
@@ -95,6 +101,21 @@ export default function BillReviewScreen() {
           </Text>
         </View>
 
+        {parseError ? (
+          <View
+            style={[
+              styles.notice,
+              { backgroundColor: colors.surfaceMuted, borderColor: colors.danger },
+            ]}>
+            <Text variant="caption" color="danger">
+              {t('billReview.parseError')}
+            </Text>
+            <Text variant="caption" color="textSecondary">
+              {parseError}
+            </Text>
+          </View>
+        ) : null}
+
         <TextInput
           label={t('billReview.amount')}
           value={amount}
@@ -135,48 +156,44 @@ export default function BillReviewScreen() {
         />
 
         <TextInput
-          label={t('billReview.competence')}
-          value={competence}
-          onChangeText={setCompetence}
-          placeholder="YYYY-MM"
-          autoCapitalize="none"
-        />
-
-        <TextInput
-          label={t('billReview.unitCode')}
-          value={unitCode}
-          onChangeText={setUnitCode}
-          placeholder="—"
-        />
-
-        <TextInput
           label={t('billReview.flag')}
           value={flag}
           onChangeText={setFlag}
           placeholder="—"
         />
 
-        <TextInput
-          label={t('billReview.accessKey')}
-          value={accessKey}
-          onChangeText={setAccessKey}
-          placeholder="—"
-          autoCapitalize="none"
-        />
-
         <View style={styles.section}>
           <Text variant="label" color="textSecondary">
             {t('billReview.charges')}
           </Text>
-          <View
-            style={[
-              styles.chargesEmpty,
-              { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
-            ]}>
-            <Text variant="caption" color="textTertiary">
-              {t('billReview.chargesEmpty')}
-            </Text>
-          </View>
+          {draft && draft.charges.length > 0 ? (
+            <View
+              style={[
+                styles.chargesEmpty,
+                { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+              ]}>
+              {draft.charges.map((charge, index) => (
+                <View key={`${charge.label}-${index}`} style={styles.chargeRow}>
+                  <Text variant="caption" style={styles.chargeLabel}>
+                    {charge.label}
+                  </Text>
+                  <Text variant="caption" color="textSecondary">
+                    {(charge.amountCents / 100).toFixed(2)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.chargesEmpty,
+                { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+              ]}>
+              <Text variant="caption" color="textTertiary">
+                {t('billReview.chargesEmpty')}
+              </Text>
+            </View>
+          )}
         </View>
 
         <Button label={t('billReview.save')} onPress={() => undefined} disabled />
@@ -221,6 +238,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     padding: spacing.md,
+    gap: spacing.xs,
   },
+  chargeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  chargeLabel: { flex: 1 },
   saveHint: { textAlign: 'center' },
 });

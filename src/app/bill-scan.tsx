@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -52,6 +52,12 @@ export default function BillScanScreen() {
       : null;
   const setScan = useBillScanStore((state) => state.setScan);
   const resetScan = useBillScanStore((state) => state.resetScan);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => setTorchOn(false);
+    }, []),
+  );
 
   const onViewLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
