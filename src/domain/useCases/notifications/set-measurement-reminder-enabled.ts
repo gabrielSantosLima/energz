@@ -22,6 +22,7 @@ export class SetMeasurementReminderEnabledUseCase {
         (await this.notifications.hasPermission()) ||
         (await this.notifications.requestPermission());
       if (!granted) {
+        await this.storage.write({ measurementReminderEnabled: false });
         return false;
       }
       await this.notifications.scheduleMeasurementReminders(

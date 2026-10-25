@@ -3,5 +3,5 @@ export interface NotificationSettings {
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
-  measurementReminderEnabled: false,
+  measurementReminderEnabled: true,
 };

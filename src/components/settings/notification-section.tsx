@@ -13,7 +13,7 @@ export function NotificationSection() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { measurementReminderEnabled, saving, setMeasurementReminder } =
-    useNotifications();
+    useNotifications({ initialize: false });
   const [pending, setPending] = useState(false);
 
   const onChange = async (value: boolean) => {

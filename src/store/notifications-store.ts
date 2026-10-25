@@ -8,7 +8,7 @@ type NotificationsState = {
 };
 
 export const useNotificationsStore = create<NotificationsState>((set) => ({
-  measurementReminderEnabled: false,
+  measurementReminderEnabled: true,
   hydrated: false,
   setMeasurementReminderEnabled: (enabled) =>
     set({ measurementReminderEnabled: enabled }),

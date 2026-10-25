@@ -6,7 +6,11 @@ import { useInjection } from '@/hooks/use-injection';
 import { useTranslation } from '@/hooks/use-translation';
 import { useNotificationsStore } from '@/store/notifications-store';
 
-export function useNotifications() {
+type Options = {
+  initialize?: boolean;
+};
+
+export function useNotifications({ initialize = true }: Options = {}) {
   const getSettings = useInjection(GetNotificationSettingsUseCase);
   const setReminder = useInjection(SetMeasurementReminderEnabledUseCase);
   const { t } = useTranslation();
@@ -22,19 +26,42 @@ export function useNotifications() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!initialize || hydrated) {
+      return;
+    }
+
     let active = true;
 
-    void getSettings.execute().then((settings) => {
+    void (async () => {
+      const settings = await getSettings.execute();
+      let enabled = settings.measurementReminderEnabled;
+
+      if (!settings.configured) {
+        enabled = await setReminder.execute({
+          enabled,
+          title: t('notifications.measurement.title'),
+          body: t('notifications.measurement.body'),
+        });
+      }
+
       if (active) {
-        applyEnabled(settings.measurementReminderEnabled);
+        applyEnabled(enabled);
         setHydrated(true);
       }
-    });
+    })();
 
     return () => {
       active = false;
     };
-  }, [getSettings, applyEnabled, setHydrated]);
+  }, [
+    initialize,
+    hydrated,
+    getSettings,
+    setReminder,
+    applyEnabled,
+    setHydrated,
+    t,
+  ]);
 
   const setMeasurementReminder = useCallback(
     async (value: boolean) => {

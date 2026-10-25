@@ -20,6 +20,7 @@ import { ToastProvider } from '@/contexts/toast';
 import { PillNav } from '@/components/ui/pill-nav';
 import { useAgentSettings } from '@/hooks/use-agent-settings';
 import { useNotificationObserver } from '@/hooks/use-notification-observer';
+import { useNotifications } from '@/hooks/use-notifications';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -58,6 +59,7 @@ export default function RootLayout() {
   const pathname = usePathname();
 
   useAgentSettings();
+  useNotifications({ initialize: true });
   useNotificationObserver();
 
   const ready = fontsLoaded && hydrated;
