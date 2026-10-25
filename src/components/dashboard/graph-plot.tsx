@@ -1,12 +1,5 @@
-import {
-  Canvas,
-  Circle,
-  Line,
-  Path,
-  Skia,
-  vec,
-} from '@shopify/react-native-skia';
 import { memo, useCallback, useMemo } from 'react';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 type Point = {
   date: Date;
@@ -38,10 +31,9 @@ function buildPath(
   toY: (value: number) => number,
   topBound: number,
   bottomBound: number,
-) {
-  const path = Skia.Path.Make();
+): string {
   if (points.length === 0) {
-    return path;
+    return '';
   }
 
   const coords = points.map((point) => ({
@@ -49,7 +41,7 @@ function buildPath(
     y: toY(point.value),
   }));
 
-  path.moveTo(coords[0].x, coords[0].y);
+  let path = `M ${coords[0].x} ${coords[0].y}`;
 
   for (let index = 0; index < coords.length - 1; index += 1) {
     const p0 = coords[index - 1] ?? coords[index];
@@ -68,7 +60,7 @@ function buildPath(
       bottomBound,
     );
 
-    path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    path += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
   }
 
   return path;
@@ -136,28 +128,30 @@ export const GraphPlot = memo(function GraphPlot({
         {ticks.map((tick) => (
           <Line
             key={`grid-${tick}`}
-            p1={vec(padding.left, toY(tick))}
-            p2={vec(width - padding.right, toY(tick))}
-            color={gridColor}
+            x1={padding.left}
+            y1={toY(tick)}
+            x2={width - padding.right}
+            y2={toY(tick)}
+            stroke={gridColor}
             strokeWidth={1}
           />
         ))}
 
         <Path
-          path={productionPath}
-          color={productionColor}
-          style="stroke"
+          d={productionPath}
+          stroke={productionColor}
           strokeWidth={STROKE}
-          strokeCap="round"
-          strokeJoin="round"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
         />
         <Path
-          path={consumptionPath}
-          color={consumptionColor}
-          style="stroke"
+          d={consumptionPath}
+          stroke={consumptionColor}
           strokeWidth={STROKE}
-          strokeCap="round"
-          strokeJoin="round"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
         />
 
         {consumption.map((point, index) => (
@@ -166,7 +160,7 @@ export const GraphPlot = memo(function GraphPlot({
             cx={toX(point.date)}
             cy={toY(point.value)}
             r={DOT_RADIUS}
-            color={inactiveDotColor}
+            fill={inactiveDotColor}
           />
         ))}
 
@@ -176,7 +170,7 @@ export const GraphPlot = memo(function GraphPlot({
             cx={toX(point.date)}
             cy={toY(point.value)}
             r={DOT_RADIUS}
-            color={inactiveDotColor}
+            fill={inactiveDotColor}
           />
         ))}
       </>
@@ -202,7 +196,7 @@ export const GraphPlot = memo(function GraphPlot({
   const activeProduction = production[activeIndex];
 
   return (
-    <Canvas style={{ width, height }}>
+    <Svg width={width} height={height}>
       {staticLayer}
 
       {activeConsumption ? (
@@ -210,7 +204,7 @@ export const GraphPlot = memo(function GraphPlot({
           cx={toX(activeConsumption.date)}
           cy={toY(activeConsumption.value)}
           r={DOT_RADIUS_ACTIVE}
-          color={consumptionColor}
+          fill={consumptionColor}
         />
       ) : null}
       {activeProduction ? (
@@ -218,9 +212,9 @@ export const GraphPlot = memo(function GraphPlot({
           cx={toX(activeProduction.date)}
           cy={toY(activeProduction.value)}
           r={DOT_RADIUS_ACTIVE}
-          color={productionColor}
+          fill={productionColor}
         />
       ) : null}
-    </Canvas>
+    </Svg>
   );
 });
