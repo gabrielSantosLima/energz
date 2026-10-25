@@ -1,4 +1,5 @@
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -40,7 +41,6 @@ const GRAPH_PADDING_VALUES = {
   top: GRAPH_PADDING,
   bottom: GRAPH_PADDING,
 };
-const SCROLL_THROTTLE_MS = 50;
 
 const WheelItem = memo(function WheelItem({
   label,
@@ -75,10 +75,13 @@ export function CycleChart({ cycle, measurements }: Props) {
   const { t, locale } = useTranslation();
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [wheelWidth, setWheelWidth] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedMs, setSelectedMs] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
-  const userScrolling = useRef(false);
-  const lastScrollUpdate = useRef(0);
+  const chartStateRef = useRef({
+    activeIndex: -1,
+    hasData: false,
+    wheelWidth: 0,
+  });
 
   const series = useMemo<Series>(() => {
     if (!cycle) {
@@ -108,10 +111,13 @@ export function CycleChart({ cycle, measurements }: Props) {
 
   const count = series.consumption.length;
   const lastIndex = count - 1;
-  const activeIndex =
-    selectedIndex !== null && selectedIndex >= 0 && selectedIndex <= lastIndex
-      ? selectedIndex
-      : lastIndex;
+  const selectedIndex =
+    selectedMs === null
+      ? -1
+      : series.consumption.findIndex(
+          (point) => point.date.getTime() === selectedMs,
+        );
+  const activeIndex = selectedIndex >= 0 ? selectedIndex : lastIndex;
 
   const xMin = series.consumption[0]?.date.getTime() ?? 0;
   const xMax = series.consumption[lastIndex]?.date.getTime() ?? 0;
@@ -123,45 +129,54 @@ export function CycleChart({ cycle, measurements }: Props) {
     [series.consumption, locale],
   );
 
-  const scrollToLast = useCallback(() => {
-    if (lastIndex < 0) {
-      return;
-    }
-    scrollRef.current?.scrollTo({ x: lastIndex * ITEM_WIDTH, animated: false });
-    setSelectedIndex(lastIndex);
-  }, [lastIndex]);
+  const scrollToIndex = useCallback((index: number, animated = false) => {
+    scrollRef.current?.scrollTo({ x: index * ITEM_WIDTH, animated });
+  }, []);
 
-  const syncIndex = useCallback(
+  const syncOffset = useCallback(
     (offsetX: number) => {
       const raw = Math.round(offsetX / ITEM_WIDTH);
       const clamped = Math.min(Math.max(raw, 0), Math.max(lastIndex, 0));
-      setSelectedIndex((current) => (current === clamped ? current : clamped));
+      const point = series.consumption[clamped];
+      if (point) {
+        setSelectedMs((current) =>
+          current === point.date.getTime() ? current : point.date.getTime(),
+        );
+      }
     },
-    [lastIndex],
+    [lastIndex, series.consumption],
   );
 
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (!userScrolling.current) {
-        return;
-      }
+  const handleContentSizeChange = useCallback(() => {
+    if (selectedMs === null && hasData) {
+      scrollToIndex(lastIndex);
+    }
+  }, [hasData, lastIndex, scrollToIndex, selectedMs]);
 
-      const now = Date.now();
-      if (now - lastScrollUpdate.current < SCROLL_THROTTLE_MS) {
-        return;
+  useEffect(() => {
+    if (selectedMs === null && hasData && wheelWidth > 0 && lastIndex >= 0) {
+      scrollToIndex(lastIndex);
+    }
+  }, [hasData, lastIndex, scrollToIndex, selectedMs, wheelWidth]);
+
+  useEffect(() => {
+    chartStateRef.current = { activeIndex, hasData, wheelWidth };
+  }, [activeIndex, hasData, wheelWidth]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const state = chartStateRef.current;
+      if (state.hasData && state.wheelWidth > 0 && state.activeIndex >= 0) {
+        scrollToIndex(state.activeIndex);
       }
-      lastScrollUpdate.current = now;
-      syncIndex(event.nativeEvent.contentOffset.x);
-    },
-    [syncIndex],
+    }, [scrollToIndex]),
   );
 
   const onScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      userScrolling.current = false;
-      syncIndex(event.nativeEvent.contentOffset.x);
+      syncOffset(event.nativeEvent.contentOffset.x);
     },
-    [syncIndex],
+    [syncOffset],
   );
 
   const activeConsumption = series.consumption[activeIndex];
@@ -228,15 +243,9 @@ export function CycleChart({ cycle, measurements }: Props) {
             showsHorizontalScrollIndicator={false}
             snapToInterval={ITEM_WIDTH}
             decelerationRate="fast"
-            onScroll={onScroll}
-            onScrollBeginDrag={() => {
-              userScrolling.current = true;
-              lastScrollUpdate.current = 0;
-            }}
             onScrollEndDrag={onScrollEnd}
             onMomentumScrollEnd={onScrollEnd}
-            onContentSizeChange={scrollToLast}
-            scrollEventThrottle={32}
+            onContentSizeChange={handleContentSizeChange}
             contentContainerStyle={{
               paddingHorizontal: Math.max(0, (wheelWidth - ITEM_WIDTH) / 2),
             }}>
