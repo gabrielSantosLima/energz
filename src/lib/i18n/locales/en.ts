@@ -211,7 +211,7 @@ export const en = {
     processing: 'Processing...',
     flashOn: 'Turn flash on',
     flashOff: 'Turn flash off',
-    googleScanner: 'Google Scanner',
+    googleScanner: 'Advanced Mode',
   },
   billPreview: {
     retake: 'Retake',

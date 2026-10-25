@@ -211,7 +211,7 @@ export const pt = {
     processing: 'Processando...',
     flashOn: 'Ligar flash',
     flashOff: 'Desligar flash',
-    googleScanner: 'Scanner do Google',
+    googleScanner: 'Modo Avançado',
   },
   billPreview: {
     retake: 'Tirar outra',
