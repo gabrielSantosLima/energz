@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { NotificationSection } from '@/components/settings/notification-section';
@@ -9,6 +8,7 @@ import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
 import { useAgentSettings } from '@/hooks/use-agent-settings';
 import { useDevMode } from '@/hooks/use-dev-mode';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { usePreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -22,6 +22,7 @@ export default function SettingsScreen() {
   const { devMode, disableDevMode } = useDevMode();
   const { theme, locale, setTheme, setLocale } = usePreferences();
   const { configured } = useAgentSettings();
+  const navigate = useSafeNavigation();
 
   return (
     <Screen scroll>
@@ -68,7 +69,7 @@ export default function SettingsScreen() {
         <Button
           label={t('settings.ai.configure')}
           variant="secondary"
-          onPress={() => router.push('/agent-settings')}
+          onPress={() => navigate('/agent-settings')}
         />
       </View>
 

@@ -1,8 +1,9 @@
-import { router, usePathname, type Href } from 'expo-router';
+import { usePathname, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { elevation, radius, spacing } from '@/theme';
@@ -46,6 +47,7 @@ export function PillNav() {
   const pathname = usePathname();
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
+  const navigate = useSafeNavigation();
 
   return (
     <View
@@ -67,7 +69,7 @@ export function PillNav() {
               accessibilityRole="button"
               accessibilityLabel={t(item.labelKey)}
               accessibilityState={{ selected: active }}
-              onPress={() => router.push(item.href)}
+              onPress={() => navigate(item.href)}
               hitSlop={spacing.sm}
               style={styles.item}>
               <SymbolView name={item.icon} size={24} tintColor={tint} />

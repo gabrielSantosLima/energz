@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { useInjection } from '@/hooks/use-injection';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { mapGuideToPhoto, getContainRect } from '@/lib/photo-crop';
@@ -27,6 +28,7 @@ export default function BillScanScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const processor = useInjection(BillImageProcessor);
+  const navigate = useSafeNavigation();
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
@@ -82,7 +84,7 @@ export default function BillScanScreen() {
       detected: processed.detected,
     });
     setProcessing(false);
-    router.push('/bill-preview');
+    navigate('/bill-preview');
   };
 
   const capture = async () => {
@@ -127,7 +129,7 @@ export default function BillScanScreen() {
         detected: false,
       });
       setProcessing(false);
-      router.push('/bill-preview');
+      navigate('/bill-preview');
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });
       setProcessing(false);

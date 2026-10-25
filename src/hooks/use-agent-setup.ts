@@ -1,13 +1,14 @@
-import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 
 import { useAgentSettings } from '@/hooks/use-agent-settings';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function useAgentSetup(): (onReady: () => void) => void {
   const { t } = useTranslation();
   const { configured, hydrated } = useAgentSettings();
+  const navigate = useSafeNavigation();
 
   return useCallback(
     (onReady: () => void) => {
@@ -27,11 +28,11 @@ export function useAgentSetup(): (onReady: () => void) => void {
           { text: t('common.cancel'), style: 'cancel' },
           {
             text: t('agentSetup.configure'),
-            onPress: () => router.push('/agent-settings'),
+            onPress: () => navigate('/agent-settings'),
           },
         ],
       );
     },
-    [configured, hydrated, t],
+    [configured, hydrated, navigate, t],
   );
 }

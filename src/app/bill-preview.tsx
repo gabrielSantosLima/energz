@@ -10,6 +10,7 @@ import { Text } from '@/components/ui/text';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { useBillParser } from '@/hooks/use-bill-parser';
 import { useInjection } from '@/hooks/use-injection';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { useBillDraftStore } from '@/store/bill-draft-store';
@@ -22,6 +23,7 @@ export default function BillPreviewScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const processor = useInjection(BillImageProcessor);
+  const navigate = useSafeNavigation();
   const { parse } = useBillParser();
   const resetDraft = useBillDraftStore((state) => state.resetDraft);
   const scan = useBillScanStore((state) => state.scan);
@@ -43,7 +45,7 @@ export default function BillPreviewScreen() {
       if (!devMode) {
         await parse(text);
       }
-      router.push(devMode ? '/dev' : '/bill-review');
+      navigate(devMode ? '/dev' : '/bill-review');
     } catch (error) {
       setScan({ error: error instanceof Error ? error.message : String(error) });
     } finally {

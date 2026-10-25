@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
@@ -11,6 +10,7 @@ import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
 import type { Cycle } from '@/domain/entities/cycle';
 import { useCycles } from '@/hooks/use-cycles';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatEnergy } from '@/lib/format';
@@ -19,6 +19,7 @@ import { radius, spacing } from '@/theme';
 export default function CyclesScreen() {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
+  const navigate = useSafeNavigation();
   const toast = useToast();
   const { cycles, loading, refreshing, error, refresh, deleteCycles } =
     useCycles();
@@ -29,7 +30,7 @@ export default function CyclesScreen() {
   const ordered = [...cycles].reverse();
 
   const openCycle = (id: string) =>
-    router.push({ pathname: '/cycle', params: { id } });
+    navigate({ pathname: '/cycle', params: { id } });
 
   const toggle = (id: string) =>
     setSelectedIds((prev) =>
@@ -188,7 +189,7 @@ export default function CyclesScreen() {
           </Text>
           <Button
             label={t('measurements.add')}
-            onPress={() => router.push('/measurement')}
+            onPress={() => navigate('/measurement')}
           />
         </View>
       ) : (

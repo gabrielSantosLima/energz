@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { router, type Href } from 'expo-router';
+import { type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -19,6 +19,7 @@ import { useCycles } from '@/hooks/use-cycles';
 import { useDevMode } from '@/hooks/use-dev-mode';
 import { useEnergyBills } from '@/hooks/use-energy-bills';
 import { useMeasurements } from '@/hooks/use-measurements';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
@@ -40,6 +41,7 @@ export default function DashboardScreen() {
   const { t } = useTranslation();
   const toast = useToast();
   const requireAgentSetup = useAgentSetup();
+  const navigate = useSafeNavigation();
   const { devMode, enableDevMode } = useDevMode();
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -237,7 +239,7 @@ export default function DashboardScreen() {
           </Text>
           <Button
             label={t('measurements.add')}
-            onPress={() => router.push('/measurement')}
+            onPress={() => navigate('/measurement')}
           />
         </View>
       ) : null}
@@ -262,9 +264,9 @@ export default function DashboardScreen() {
                   ? () => {
                       const href = feature.href as Href;
                       if (feature.usesAgent) {
-                        requireAgentSetup(() => router.push(href));
+                        requireAgentSetup(() => navigate(href));
                       } else {
-                        router.push(href);
+                        navigate(href);
                       }
                     }
                   : undefined

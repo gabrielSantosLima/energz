@@ -21,6 +21,7 @@ import {
   useEnergyBills,
 } from '@/hooks/use-energy-bills';
 import { useMeasurementActions, useMeasurements } from '@/hooks/use-measurements';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -47,6 +48,7 @@ export default function MeasurementsScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<{ tab?: string }>();
   const requireAgentSetup = useAgentSetup();
+  const navigate = useSafeNavigation();
   const { measurements, loading, refreshing, error, refresh, reload } =
     useMeasurements();
   const {
@@ -105,10 +107,10 @@ export default function MeasurementsScreen() {
     );
   }, [measurements, selectedCycle]);
 
-  const openNew = () => router.push('/measurement');
-  const openNewBill = () => requireAgentSetup(() => router.push('/bill-scan'));
+  const openNew = () => navigate('/measurement');
+  const openNewBill = () => requireAgentSetup(() => navigate('/bill-scan'));
   const openMeasurement = (id: string) =>
-    router.push({ pathname: '/measurement', params: { id } });
+    navigate({ pathname: '/measurement', params: { id } });
 
   const toggle = (id: string) =>
     setSelectedIds((prev) =>
@@ -296,7 +298,7 @@ export default function MeasurementsScreen() {
             if (selecting) {
               toggle(item.id);
             } else {
-              router.push({ pathname: '/bill-review', params: { id: item.id } });
+              navigate({ pathname: '/bill-review', params: { id: item.id } });
             }
           }}
           onLongPress={() => startSelection(item.id)}
@@ -387,7 +389,7 @@ export default function MeasurementsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t('bills.addManual')}
                 onPress={() =>
-                  router.push({
+                  navigate({
                     pathname: '/bill-review',
                     params: { manual: '1' },
                   })

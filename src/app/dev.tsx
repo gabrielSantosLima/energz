@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { useBillParser } from '@/hooks/use-bill-parser';
+import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useBillDraftStore } from '@/store/bill-draft-store';
 import { useBillScanStore } from '@/store/bill-scan-store';
 import { useDevStore } from '@/store/dev-store';
@@ -17,6 +17,7 @@ import { radius, spacing } from '@/theme';
 export default function DevScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const navigate = useSafeNavigation();
   const devMode = useDevStore((state) => state.devMode);
   const scan = useBillScanStore((state) => state.scan);
   const resetScan = useBillScanStore((state) => state.resetScan);
@@ -70,7 +71,7 @@ export default function DevScreen() {
       <Text variant="title">{t('dev.title')}</Text>
 
       <View style={styles.actions}>
-        <Button label={t('dev.scan')} onPress={() => router.push('/bill-scan')} />
+        <Button label={t('dev.scan')} onPress={() => navigate('/bill-scan')} />
         <Button
           label={t('dev.parse')}
           onPress={runParser}
