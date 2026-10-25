@@ -1,6 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -45,16 +46,24 @@ const GRAPH_PADDING_VALUES = {
 const WheelItem = memo(function WheelItem({
   label,
   active,
+  index,
+  onSelect,
 }: {
   label: string;
   active: boolean;
+  index: number;
+  onSelect: (index: number) => void;
 }) {
   return (
-    <View style={styles.wheelItem}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={() => onSelect(index)}
+      style={styles.wheelItem}>
       <Text variant="label" color={active ? 'textPrimary' : 'textTertiary'}>
         {label}
       </Text>
-    </View>
+    </Pressable>
   );
 });
 
@@ -132,6 +141,18 @@ export function CycleChart({ cycle, measurements }: Props) {
   const scrollToIndex = useCallback((index: number, animated = false) => {
     scrollRef.current?.scrollTo({ x: index * ITEM_WIDTH, animated });
   }, []);
+
+  const selectIndex = useCallback(
+    (index: number) => {
+      const clamped = Math.min(Math.max(index, 0), Math.max(lastIndex, 0));
+      const point = series.consumption[clamped];
+      if (point) {
+        setSelectedMs(point.date.getTime());
+      }
+      scrollToIndex(clamped, true);
+    },
+    [lastIndex, scrollToIndex, series.consumption],
+  );
 
   const syncOffset = useCallback(
     (offsetX: number) => {
@@ -254,6 +275,8 @@ export function CycleChart({ cycle, measurements }: Props) {
                 key={index}
                 label={label}
                 active={index === activeIndex}
+                index={index}
+                onSelect={selectIndex}
               />
             ))}
           </ScrollView>
