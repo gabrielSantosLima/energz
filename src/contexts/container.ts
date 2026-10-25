@@ -3,8 +3,11 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 
 import { AgentSettingsStorage } from '@/domain/services/agent-settings-storage';
+import { BackupSettingsStorage } from '@/domain/services/backup-settings-storage';
+import { BackgroundBackupService } from '@/domain/services/background-backup-service';
 import { BillImageProcessor } from '@/domain/services/bill-image-processor';
 import { Database } from '@/domain/services/database';
+import { DatabaseBackupService } from '@/domain/services/database-backup-service';
 import { EnergyBillRepository } from '@/domain/services/energy-bill-repository';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { ImageCapturer } from '@/domain/services/image-capturer';
@@ -16,6 +19,10 @@ import { ReportExporter } from '@/domain/services/report-exporter';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
 import { ParseEnergyBillUseCase } from '@/domain/useCases/agents/parse-energy-bill';
 import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
+import { GetBackupSettingsUseCase } from '@/domain/useCases/backup/get-backup-settings';
+import { GetBackupStatusUseCase } from '@/domain/useCases/backup/get-backup-status';
+import { RunDatabaseBackupUseCase } from '@/domain/useCases/backup/run-database-backup';
+import { SetAutoBackupEnabledUseCase } from '@/domain/useCases/backup/set-auto-backup-enabled';
 import { DeleteEnergyBillUseCase } from '@/domain/useCases/bills/delete-energy-bill';
 import { DeleteEnergyBillsUseCase } from '@/domain/useCases/bills/delete-energy-bills';
 import { GetEnergyBillUseCase } from '@/domain/useCases/bills/get-energy-bill';
@@ -50,6 +57,9 @@ container.registerSingleton(IdGenerator);
 container.registerSingleton(NotificationService);
 container.registerSingleton(BillImageProcessor);
 container.registerSingleton(AgentSettingsStorage);
+container.registerSingleton(BackupSettingsStorage);
+container.registerSingleton(DatabaseBackupService);
+container.registerSingleton(BackgroundBackupService);
 container.registerSingleton(ReportExporter);
 container.registerSingleton(ImageCapturer);
 
@@ -60,6 +70,11 @@ container.registerSingleton(SetThemePreferenceUseCase);
 container.registerSingleton(GetAgentSettingsUseCase);
 container.registerSingleton(SaveAgentSettingsUseCase);
 container.registerSingleton(ParseEnergyBillUseCase);
+
+container.registerSingleton(GetBackupSettingsUseCase);
+container.registerSingleton(GetBackupStatusUseCase);
+container.registerSingleton(SetAutoBackupEnabledUseCase);
+container.registerSingleton(RunDatabaseBackupUseCase);
 
 container.registerSingleton(GetNotificationSettingsUseCase);
 container.registerSingleton(SetMeasurementReminderEnabledUseCase);

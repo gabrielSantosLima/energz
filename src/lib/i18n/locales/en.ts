@@ -125,6 +125,28 @@ export const en = {
     title: 'AI Agent',
     message: 'This feature is under development.',
   },
+
+  backup: {
+    title: 'Backup',
+    subtitle: 'Protect your local database with automatic backups.',
+    databaseSize: 'Database size',
+    versions: 'Saved versions',
+    versionsValue: '{{count}} / 3',
+    lastBackup: 'Last backup',
+    never: 'Never',
+    auto: 'Automatic backup',
+    autoDescription:
+      'Runs daily around midnight when the system allows. Keeps the last 3 versions.',
+    inProgress: 'Backing up...',
+    backupNow: 'Back up now',
+    completed: 'Backup completed',
+    hint: 'The system may delay background backups to save battery. Opening the app also triggers a pending backup.',
+    permissionTitle: 'Notifications disabled',
+    permissionMessage:
+      'Backups will still run, but progress notifications may not appear.',
+    notificationTitle: 'Database backup completed',
+    notificationBody: 'Your energz database was backed up.',
+  },
   agentSetup: {
     title: 'No AI configured',
     message:
@@ -157,6 +179,10 @@ export const en = {
       label: 'Language',
       en: 'English',
       pt: 'Portuguese',
+    },
+    backup: {
+      title: 'Backup',
+      configure: 'Configure backup',
     },
     ai: {
       title: 'AI',

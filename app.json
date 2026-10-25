@@ -43,7 +43,8 @@
       "@react-native-community/datetimepicker",
       "expo-sharing",
       "expo-notifications",
-      "expo-camera"
+      "expo-camera",
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -37,6 +37,13 @@ export function formatEnergy(value: number, locale: Locale): string {
   return `${formatNumber(value, locale)} kWh`;
 }
 
+export function formatBytes(bytes: number, locale: Locale): string {
+  if (bytes >= 1_000_000_000) {
+    return `${formatNumber(bytes / 1_000_000_000, locale, 2)} GB`;
+  }
+  return `${formatNumber(bytes / 1_000_000, locale, 2)} MB`;
+}
+
 export function formatCurrency(cents: number, locale: Locale): string {
   return new Intl.NumberFormat(intlLocale[locale], {
     style: 'currency',

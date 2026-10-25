@@ -125,6 +125,28 @@ export const pt = {
     title: 'Agente de IA',
     message: 'Esta funcionalidade está em desenvolvimento.',
   },
+
+  backup: {
+    title: 'Backup',
+    subtitle: 'Proteja o banco local com backups automáticos.',
+    databaseSize: 'Tamanho do banco',
+    versions: 'Versões salvas',
+    versionsValue: '{{count}} / 3',
+    lastBackup: 'Último backup',
+    never: 'Nunca',
+    auto: 'Backup automático',
+    autoDescription:
+      'Executa diariamente por volta da meia-noite quando o sistema permite. Mantém as 3 últimas versões.',
+    inProgress: 'Fazendo backup...',
+    backupNow: 'Fazer backup agora',
+    completed: 'Backup concluído',
+    hint: 'O sistema pode atrasar backups em segundo plano para economizar bateria. Abrir o app também dispara um backup pendente.',
+    permissionTitle: 'Notificações desativadas',
+    permissionMessage:
+      'Os backups continuarão, mas as notificações de progresso podem não aparecer.',
+    notificationTitle: 'Backup do banco concluído',
+    notificationBody: 'O banco do energz foi salvo.',
+  },
   agentSetup: {
     title: 'Nenhuma IA configurada',
     message:
@@ -157,6 +179,10 @@ export const pt = {
       label: 'Idioma',
       en: 'Inglês',
       pt: 'Português',
+    },
+    backup: {
+      title: 'Backup',
+      configure: 'Configurar backup',
     },
     ai: {
       title: 'IA',

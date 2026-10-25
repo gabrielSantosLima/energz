@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { injectable } from 'tsyringe';
 
 const CHANNEL_ID = 'measurement-reminders';
+const BACKUP_CHANNEL_ID = 'database-backups';
 const MEASUREMENT_TIMES = [
   { hour: 7, minute: 0 },
   { hour: 19, minute: 0 },
@@ -52,12 +53,23 @@ export class NotificationService {
     await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
-  private async ensureChannel(): Promise<void> {
+  async present(title: string, body: string): Promise<void> {
+    await this.ensureChannel(BACKUP_CHANNEL_ID, 'Database backups');
+    await Notifications.scheduleNotificationAsync({
+      content: { title, body },
+      trigger: null,
+    });
+  }
+
+  private async ensureChannel(
+    channelId = CHANNEL_ID,
+    name = 'Measurement reminders',
+  ): Promise<void> {
     if (Platform.OS !== 'android') {
       return;
     }
-    await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-      name: 'Measurement reminders',
+    await Notifications.setNotificationChannelAsync(channelId, {
+      name,
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }

@@ -61,6 +61,17 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text variant="label" color="textSecondary">
+          {t('settings.backup.title')}
+        </Text>
+        <Button
+          label={t('settings.backup.configure')}
+          variant="secondary"
+          onPress={() => navigate('/backup-settings')}
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text variant="label" color="textSecondary">
           {t('settings.ai.title')}
         </Text>
         <Text variant="caption" color="textTertiary">
