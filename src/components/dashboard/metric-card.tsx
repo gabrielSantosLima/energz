@@ -10,6 +10,7 @@ import { radius, spacing, tabularNums } from '@/theme';
 type Props = {
   label: string;
   value: number;
+  intervalValue: number | null;
   trend: number | null;
   accent: string;
   higherIsBetter: boolean;
@@ -30,12 +31,13 @@ const ARROW_DOWN: SymbolViewProps['name'] = {
 export function MetricCard({
   label,
   value,
+  intervalValue,
   trend,
   accent,
   higherIsBetter,
 }: Props) {
   const { colors } = useTheme();
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const isUp = trend !== null && trend > 0;
   const isDown = trend !== null && trend < 0;
@@ -69,29 +71,42 @@ export function MetricCard({
           variant="title"
           numberOfLines={1}
           style={[styles.value, tabularNums]}>
-          {formatNumber(value, locale)}
+          {formatNumber(value, locale, 0)}
         </Text>
         <Text variant="caption" color="textTertiary">
           kWh
         </Text>
       </View>
 
-      {trend !== null ? (
-        <View style={styles.trendRow}>
-          {direction !== 'flat' ? (
-            <SymbolView
-              name={direction === 'up' ? ARROW_UP : ARROW_DOWN}
-              size={14}
-              tintColor={trendColor}
-            />
+      {intervalValue !== null ? (
+        <>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.intervalRow}>
+            <Text variant="caption" color="textSecondary" numberOfLines={1}>
+              {t('dashboard.sinceLastReading')}
+            </Text>
+            <Text variant="bodyStrong" numberOfLines={1}>
+              {`${formatNumber(intervalValue, locale, 0)} kWh`}
+            </Text>
+          </View>
+          {trend !== null && trend !== 0 ? (
+            <View style={styles.trendRow}>
+              {direction !== 'flat' ? (
+                <SymbolView
+                  name={direction === 'up' ? ARROW_UP : ARROW_DOWN}
+                  size={14}
+                  tintColor={trendColor}
+                />
+              ) : null}
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                style={{ color: trendColor }}>
+                {`${trend > 0 ? '+' : ''}${formatNumber(trend, locale, 0)} kWh`}
+              </Text>
+            </View>
           ) : null}
-          <Text
-            variant="caption"
-            numberOfLines={1}
-            style={{ color: trendColor }}>
-            {`${trend > 0 ? '+' : ''}${formatNumber(trend, locale)} kWh`}
-          </Text>
-        </View>
+        </>
       ) : null}
     </View>
   );
@@ -99,7 +114,6 @@ export function MetricCard({
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
     borderRadius: radius.xl,
     borderWidth: 1,
     padding: spacing.lg,
@@ -121,6 +135,15 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   value: { flexShrink: 1 },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+  },
+  intervalRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
   trendRow: {
     flexDirection: 'row',
     alignItems: 'center',

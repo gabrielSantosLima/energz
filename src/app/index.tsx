@@ -214,6 +214,7 @@ export default function DashboardScreen() {
           <MetricCard
             label={t('dashboard.consumption')}
             value={selected?.consumption ?? 0}
+            intervalValue={lastInterval?.consumption ?? null}
             trend={consumptionTrend}
             accent={colors.primary}
             higherIsBetter={false}
@@ -221,6 +222,7 @@ export default function DashboardScreen() {
           <MetricCard
             label={t('dashboard.production')}
             value={selected?.production ?? 0}
+            intervalValue={lastInterval?.production ?? null}
             trend={productionTrend}
             accent={colors.accent}
             higherIsBetter
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   metricsRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: spacing.md,
     marginBottom: spacing.xl,
   },

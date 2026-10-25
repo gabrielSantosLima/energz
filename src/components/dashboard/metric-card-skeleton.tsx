@@ -22,7 +22,6 @@ export function MetricCardSkeleton() {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
     borderRadius: radius.xl,
     borderWidth: 1,
     padding: spacing.lg,

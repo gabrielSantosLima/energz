@@ -23,6 +23,7 @@ export const en = {
     production: 'Production',
     emptyHint: 'Add your first measurement to see your metrics.',
     chartTitle: 'Consumption vs production',
+    sinceLastReading: 'Since last reading',
     chartEmpty: 'Add more measurements to see the chart.',
     billHistory: 'Bill history',
     billForecast: 'Current bill forecast',
