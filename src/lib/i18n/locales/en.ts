@@ -231,7 +231,7 @@ export const en = {
     amount: 'Total amount (R$)',
     activeKwh: 'En Ativa (kWh)',
     injectedKwh: 'En Injetado (kWh)',
-    date: 'Date (optional)',
+    date: 'Date',
     distributor: 'Distributor',
     flag: 'Flag',
     charges: 'Charges',

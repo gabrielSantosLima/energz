@@ -231,7 +231,7 @@ export const pt = {
     amount: 'Valor total (R$)',
     activeKwh: 'En Ativa (kWh)',
     injectedKwh: 'En Injetado (kWh)',
-    date: 'Data (opcional)',
+    date: 'Data',
     distributor: 'Distribuidora',
     flag: 'Bandeira',
     charges: 'Itens da conta',

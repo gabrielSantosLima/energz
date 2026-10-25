@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
+import { DateField } from '@/components/ui/date-field';
 import { Text } from '@/components/ui/text';
 import { TextInput } from '@/components/ui/text-input';
 import { useToast } from '@/contexts/toast';
@@ -113,7 +114,9 @@ function BillReviewForm({
   const [injectedKwh, setInjectedKwh] = useState(
     initial.injectedKwh != null ? String(initial.injectedKwh) : '',
   );
-  const [date, setDate] = useState(initial.readingDate ?? '');
+  const [date, setDate] = useState(
+    parseDate(initial.readingDate ?? '') ?? new Date(),
+  );
   const [distributor, setDistributor] = useState(initial.distributor ?? '');
   const [flag, setFlag] = useState(initial.flag ?? '');
   const [saving, setSaving] = useState(false);
@@ -140,7 +143,7 @@ function BillReviewForm({
     setSaveError(null);
     const input = {
       distributor: distributor.trim() || null,
-      readingDate: parseDate(date),
+      readingDate: date,
       amountCents,
       activeKwh: activeKwhValue,
       injectedKwh: injectedKwhValue,
@@ -305,12 +308,10 @@ function BillReviewForm({
           placeholder="0"
         />
 
-        <TextInput
+        <DateField
           label={t('billReview.date')}
           value={date}
-          onChangeText={setDate}
-          placeholder="YYYY-MM-DD"
-          autoCapitalize="none"
+          onChange={setDate}
         />
 
         <TextInput
