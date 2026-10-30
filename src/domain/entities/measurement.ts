@@ -1,3 +1,5 @@
+import type { RecordOrigin } from './record-origin';
+
 export interface Measurement {
   id: string;
   measuredAt: Date;
@@ -7,6 +9,7 @@ export interface Measurement {
   restart: boolean;
   createdAt: Date;
   updatedAt: Date;
+  origin: RecordOrigin | null;
 }
 
 export type MeasurementInput = {

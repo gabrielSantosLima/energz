@@ -55,6 +55,7 @@ export class SaveEnergyBillUseCase {
       source: input.source ?? 'agent',
       createdAt: now,
       updatedAt: now,
+      origin: null,
     };
 
     await this.repository.insert(bill);

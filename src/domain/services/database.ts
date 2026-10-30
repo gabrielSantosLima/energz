@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { injectable } from 'tsyringe';
 
 const DATABASE_NAME = 'energz.db';
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 @injectable()
 export class Database {
@@ -13,6 +13,14 @@ export class Database {
       this.database = this.open();
     }
     return this.database;
+  }
+
+  async getSchemaVersion(): Promise<number> {
+    const database = await this.get();
+    const versionRow = await database.getFirstAsync<{ user_version: number }>(
+      'PRAGMA user_version',
+    );
+    return versionRow?.user_version ?? 0;
   }
 
   private async open(): Promise<SQLite.SQLiteDatabase> {
@@ -65,6 +73,39 @@ export class Database {
           source TEXT NOT NULL DEFAULT 'agent',
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
+        );
+      `);
+    }
+
+    if (currentVersion < 4) {
+      const measurementColumns = await database.getAllAsync<{ name: string }>(
+        'PRAGMA table_info(measurements)',
+      );
+      if (!measurementColumns.some((column) => column.name === 'origin_device_id')) {
+        await database.execAsync(`
+          ALTER TABLE measurements ADD COLUMN origin_device_id TEXT;
+          ALTER TABLE measurements ADD COLUMN origin_device_name TEXT;
+          ALTER TABLE measurements ADD COLUMN received_at INTEGER;
+        `);
+      }
+
+      const billColumns = await database.getAllAsync<{ name: string }>(
+        'PRAGMA table_info(energy_bills)',
+      );
+      if (!billColumns.some((column) => column.name === 'origin_device_id')) {
+        await database.execAsync(`
+          ALTER TABLE energy_bills ADD COLUMN origin_device_id TEXT;
+          ALTER TABLE energy_bills ADD COLUMN origin_device_name TEXT;
+          ALTER TABLE energy_bills ADD COLUMN received_at INTEGER;
+        `);
+      }
+
+      await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS sync_tombstones (
+          entity TEXT NOT NULL,
+          record_id TEXT NOT NULL,
+          deleted_at INTEGER NOT NULL,
+          PRIMARY KEY (entity, record_id)
         );
       `);
     }

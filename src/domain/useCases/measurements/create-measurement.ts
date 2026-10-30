@@ -22,6 +22,7 @@ export class CreateMeasurementUseCase {
       restart: input.restart,
       createdAt: now,
       updatedAt: now,
+      origin: null,
     };
 
     await this.repository.insert(measurement);

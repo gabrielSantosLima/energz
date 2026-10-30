@@ -72,6 +72,17 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text variant="label" color="textSecondary">
+          {t('settings.sync.title')}
+        </Text>
+        <Button
+          label={t('settings.sync.configure')}
+          variant="secondary"
+          onPress={() => navigate('/sync')}
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text variant="label" color="textSecondary">
           {t('settings.ai.title')}
         </Text>
         <Text variant="caption" color="textTertiary">

@@ -16,6 +16,14 @@ import { NotificationService } from '@/domain/services/notification-service';
 import { NotificationSettingsStorage } from '@/domain/services/notification-settings-storage';
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { ReportExporter } from '@/domain/services/report-exporter';
+import { DeviceIdentity } from '@/domain/services/sync/device-identity';
+import { SyncRepository } from '@/domain/services/sync/sync-repository';
+import { SyncSerializer } from '@/domain/services/sync/sync-serializer';
+import {
+  SYNC_TRANSPORT,
+  type SyncTransport,
+} from '@/domain/services/sync/sync-transport';
+import { FileTransport } from '@/domain/services/sync/transports/file-transport';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
 import { ParseEnergyBillUseCase } from '@/domain/useCases/agents/parse-energy-bill';
 import { SaveAgentSettingsUseCase } from '@/domain/useCases/agents/save-agent-settings';
@@ -47,6 +55,13 @@ import { CaptureImageUseCase } from '@/domain/useCases/reports/capture-image';
 import { ExportReportImageUseCase } from '@/domain/useCases/reports/export-report-image';
 import { ExportReportPdfUseCase } from '@/domain/useCases/reports/export-report-pdf';
 import { GenerateReportUseCase } from '@/domain/useCases/reports/generate-report';
+import { ApplySyncUseCase } from '@/domain/useCases/sync/apply-sync';
+import { BuildSyncEnvelopeUseCase } from '@/domain/useCases/sync/build-sync-envelope';
+import { ExportSyncFileUseCase } from '@/domain/useCases/sync/export-sync-file';
+import { GetSyncDeviceNameUseCase } from '@/domain/useCases/sync/get-sync-device-name';
+import { ImportSyncFileUseCase } from '@/domain/useCases/sync/import-sync-file';
+import { PreviewSyncUseCase } from '@/domain/useCases/sync/preview-sync';
+import { SetSyncDeviceNameUseCase } from '@/domain/useCases/sync/set-sync-device-name';
 
 container.registerSingleton(Database);
 container.registerSingleton(PreferencesStorage);
@@ -62,6 +77,19 @@ container.registerSingleton(DatabaseBackupService);
 container.registerSingleton(BackgroundBackupService);
 container.registerSingleton(ReportExporter);
 container.registerSingleton(ImageCapturer);
+
+container.registerSingleton(DeviceIdentity);
+container.registerSingleton(SyncRepository);
+container.registerSingleton(SyncSerializer);
+container.register<SyncTransport>(SYNC_TRANSPORT, { useClass: FileTransport });
+
+container.registerSingleton(GetSyncDeviceNameUseCase);
+container.registerSingleton(SetSyncDeviceNameUseCase);
+container.registerSingleton(BuildSyncEnvelopeUseCase);
+container.registerSingleton(ExportSyncFileUseCase);
+container.registerSingleton(ImportSyncFileUseCase);
+container.registerSingleton(PreviewSyncUseCase);
+container.registerSingleton(ApplySyncUseCase);
 
 container.registerSingleton(GetPreferencesUseCase);
 container.registerSingleton(SetLocaleUseCase);

@@ -1,3 +1,5 @@
+import type { RecordOrigin } from './record-origin';
+
 export type BillChargeKind = 'discount' | 'addition' | 'info';
 
 export interface BillCharge {
@@ -33,4 +35,5 @@ export interface EnergyBill extends EnergyBillInput {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+  origin: RecordOrigin | null;
 }

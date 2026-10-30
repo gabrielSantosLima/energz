@@ -48,6 +48,7 @@ const HIDDEN_NAV_ROUTES = new Set([
   '/bill-review',
   '/agent-settings',
   '/backup-settings',
+  '/sync',
 ]);
 
 export default function RootLayout() {

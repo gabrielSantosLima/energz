@@ -4,6 +4,7 @@ import { SymbolView } from 'expo-symbols';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
+import { SourceChip } from '@/components/sync/source-chip';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
@@ -235,6 +236,10 @@ export default function MeasurementsScreen() {
             </Text>
           </View>
         </View>
+
+        {item.origin ? (
+          <SourceChip deviceName={item.origin.deviceName} />
+        ) : null}
       </Pressable>
     );
   };
@@ -358,6 +363,10 @@ export default function MeasurementsScreen() {
               </Text>
             </View>
           </View>
+
+          {item.origin ? (
+            <SourceChip deviceName={item.origin.deviceName} />
+          ) : null}
         </Pressable>
 
         {showEndCycle ? (
