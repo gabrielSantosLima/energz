@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatNumber } from '@/lib/format';
+import { formatEnergy, formatNumber } from '@/lib/format';
 import { radius, spacing, tabularNums } from '@/theme';
 
 export type EnergyMetric = {
@@ -19,6 +19,7 @@ export type EnergyMetric = {
 type Props = {
   production: EnergyMetric;
   consumption: EnergyMetric;
+  balance: number;
 };
 
 const ARROW_UP: SymbolViewProps['name'] = {
@@ -116,8 +117,16 @@ function MetricSection({
   );
 }
 
-export function EnergyOverviewCard({ consumption, production }: Props) {
+export function EnergyOverviewCard({
+  consumption,
+  production,
+  balance,
+}: Props) {
   const { colors } = useTheme();
+  const { t, locale } = useTranslation();
+
+  const balanceColor =
+    balance >= 0 ? colors.success : colors.textPrimary;
 
   return (
     <View
@@ -130,6 +139,18 @@ export function EnergyOverviewCard({ consumption, production }: Props) {
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <MetricSection {...production} />
+
+      <View style={styles.summary}>
+        <Text variant="caption" color="textSecondary">
+          {t('dashboard.balance')}
+        </Text>
+        <Text
+          variant="bodyStrong"
+          numberOfLines={1}
+          style={[tabularNums, { color: balanceColor }]}>
+          {formatEnergy(balance, locale)}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -176,5 +197,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+  },
+  summary: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
 });

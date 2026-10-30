@@ -21,6 +21,7 @@ export const en = {
     subtitle: 'Track solar production and consumption.',
     consumption: 'Consumption',
     production: 'Production',
+    balance: 'Balance',
     emptyHint: 'Add your first measurement to see your metrics.',
     chartTitle: 'Consumption vs production',
     sinceLastReading: 'Since last reading',

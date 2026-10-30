@@ -211,6 +211,7 @@ export default function DashboardScreen() {
       ) : (
         <View style={styles.metricsRow}>
           <EnergyOverviewCard
+            balance={selected?.balance ?? 0}
             consumption={{
               label: t('dashboard.consumption'),
               value: selected?.consumption ?? 0,

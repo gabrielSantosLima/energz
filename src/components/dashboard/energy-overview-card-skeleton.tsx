@@ -30,6 +30,10 @@ export function EnergyOverviewCardSkeleton() {
       <MetricSkeleton />
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
       <MetricSkeleton />
+      <View style={styles.summary}>
+        <Skeleton width={70} height={12} />
+        <Skeleton width={64} height={16} />
+      </View>
     </View>
   );
 }
@@ -51,5 +55,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.sm,
+  },
+  summary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
   },
 });

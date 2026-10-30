@@ -21,6 +21,7 @@ export const pt = {
     subtitle: 'Acompanhe produção e consumo solar.',
     consumption: 'Consumo',
     production: 'Produção',
+    balance: 'Saldo',
     emptyHint: 'Adicione sua primeira medição para ver as métricas.',
     chartTitle: 'Consumo vs produção',
     sinceLastReading: 'Desde a última medição',
