@@ -7,13 +7,18 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatNumber } from '@/lib/format';
 import { radius, spacing, tabularNums } from '@/theme';
 
-type Props = {
+export type EnergyMetric = {
   label: string;
   value: number;
   intervalValue: number | null;
   trend: number | null;
   accent: string;
   higherIsBetter: boolean;
+};
+
+type Props = {
+  production: EnergyMetric;
+  consumption: EnergyMetric;
 };
 
 const ARROW_UP: SymbolViewProps['name'] = {
@@ -28,14 +33,14 @@ const ARROW_DOWN: SymbolViewProps['name'] = {
   web: 'trending_down',
 };
 
-export function MetricCard({
+function MetricSection({
   label,
   value,
   intervalValue,
   trend,
   accent,
   higherIsBetter,
-}: Props) {
+}: EnergyMetric) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
 
@@ -54,11 +59,7 @@ export function MetricCard({
       : colors.textSecondary;
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-      ]}>
+    <View style={styles.metric}>
       <View style={styles.labelRow}>
         <View style={[styles.dot, { backgroundColor: accent }]} />
         <Text variant="caption" color="textSecondary" numberOfLines={1}>
@@ -80,9 +81,12 @@ export function MetricCard({
 
       {intervalValue !== null ? (
         <>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <View style={styles.intervalRow}>
-            <Text variant="caption" color="textSecondary" numberOfLines={1}>
+            <Text
+              variant="caption"
+              color="textSecondary"
+              numberOfLines={1}
+              style={styles.intervalLabel}>
               {t('dashboard.sinceLastReading')}
             </Text>
             <Text variant="bodyStrong" numberOfLines={1}>
@@ -112,11 +116,35 @@ export function MetricCard({
   );
 }
 
+export function EnergyOverviewCard({ consumption, production }: Props) {
+  const { colors } = useTheme();
+
+  return (
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}>
+      <MetricSection {...consumption} />
+
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+      <MetricSection {...production} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.xl,
     borderWidth: 1,
     padding: spacing.lg,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: spacing.lg,
+  },
+  metric: {
     gap: spacing.sm,
   },
   labelRow: {
@@ -135,14 +163,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   value: { flexShrink: 1 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-  },
   intervalRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: spacing.sm,
+  },
+  intervalLabel: {
+    flexShrink: 1,
   },
   trendRow: {
     flexDirection: 'row',

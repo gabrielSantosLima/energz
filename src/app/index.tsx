@@ -7,8 +7,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { CycleSelector } from '@/components/cycles/cycle-selector';
 import { BillHistoryCard } from '@/components/dashboard/bill-history-card';
 import { CycleChart } from '@/components/dashboard/cycle-chart';
-import { MetricCard } from '@/components/dashboard/metric-card';
-import { MetricCardSkeleton } from '@/components/dashboard/metric-card-skeleton';
+import { EnergyOverviewCard } from '@/components/dashboard/energy-overview-card';
+import { EnergyOverviewCardSkeleton } from '@/components/dashboard/energy-overview-card-skeleton';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
@@ -206,26 +206,27 @@ export default function DashboardScreen() {
 
       {loading ? (
         <View style={styles.metricsRow}>
-          <MetricCardSkeleton />
-          <MetricCardSkeleton />
+          <EnergyOverviewCardSkeleton />
         </View>
       ) : (
         <View style={styles.metricsRow}>
-          <MetricCard
-            label={t('dashboard.consumption')}
-            value={selected?.consumption ?? 0}
-            intervalValue={lastInterval?.consumption ?? null}
-            trend={consumptionTrend}
-            accent={colors.primary}
-            higherIsBetter={false}
-          />
-          <MetricCard
-            label={t('dashboard.production')}
-            value={selected?.production ?? 0}
-            intervalValue={lastInterval?.production ?? null}
-            trend={productionTrend}
-            accent={colors.accent}
-            higherIsBetter
+          <EnergyOverviewCard
+            consumption={{
+              label: t('dashboard.consumption'),
+              value: selected?.consumption ?? 0,
+              intervalValue: lastInterval?.consumption ?? null,
+              trend: consumptionTrend,
+              accent: colors.primary,
+              higherIsBetter: false,
+            }}
+            production={{
+              label: t('dashboard.production'),
+              value: selected?.production ?? 0,
+              intervalValue: lastInterval?.production ?? null,
+              trend: productionTrend,
+              accent: colors.accent,
+              higherIsBetter: true,
+            }}
           />
         </View>
       )}
