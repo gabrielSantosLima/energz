@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -11,18 +11,17 @@ function readArg(name, fallback = null) {
   return fallback;
 }
 
-function git(command, args = []) {
-  return execSync(command, {
+function git(args) {
+  return execFileSync("git", args, {
     encoding: "utf8",
     cwd: ROOT,
     stdio: ["ignore", "pipe", "ignore"],
-    args: args,
   }).trim();
 }
 
 function latestTag() {
   try {
-    return git("git", ["describe", "--tags", "--abbrev=0"]);
+    return git(["describe", "--tags", "--abbrev=0"]);
   } catch {
     return "";
   }
@@ -36,13 +35,18 @@ const summary = process.env.SUMMARY || readArg("--summary", "");
 const pkg = JSON.parse(
   fs.readFileSync(path.join(ROOT, "package.json"), "utf8")
 );
-const version = pkg.version;
-const date = new Date().toISOString().slice(0, 10);
+const version = readArg("--version", pkg.version);
+const date = readArg("--date", new Date().toISOString().slice(0, 10));
 
 const range = from ? `${from}..${to}` : to;
 let entries = [];
 try {
-  entries = git("git", ["log", "--no-merges", "--pretty=format:%h%x09%s", range])
+  entries = git([
+    "log",
+    "--no-merges",
+    "--pretty=format:%h%x09%s",
+    range,
+  ])
     .split("\n")
     .filter(Boolean)
     .map((line) => {
@@ -50,8 +54,11 @@ try {
       if (tab === -1) return { hash: "", subject: line };
       return { hash: line.slice(0, tab), subject: line.slice(tab + 1) };
     });
-} catch {
-  entries = [];
+} catch (error) {
+  console.error(
+    `Failed to read git history for "${range}": ${error.message}`
+  );
+  process.exit(1);
 }
 
 const groups = { features: [], fixes: [], chores: [], other: [] };
