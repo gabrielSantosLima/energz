@@ -17,7 +17,10 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
-import { buildIntervals } from '@/domain/entities/measurement';
+import {
+  buildIntervals,
+  findMeasurementsWithoutVariation,
+} from '@/domain/entities/measurement';
 import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
 import { useDevMode } from '@/hooks/use-dev-mode';
@@ -84,6 +87,10 @@ export default function DashboardScreen() {
 
   const lastReading =
     measurements.length > 0 ? measurements[measurements.length - 1] : null;
+  const inconsistentMeasurements =
+    findMeasurementsWithoutVariation(measurements);
+  const editTarget =
+    inconsistentMeasurements[inconsistentMeasurements.length - 1] ?? null;
 
   const handleQuickSubmit = useCallback(
     async (input: QuickMeasurementInput) => {
@@ -264,6 +271,15 @@ export default function DashboardScreen() {
               higherIsBetter: true,
             }}
             onQuickAdd={() => setQuickOpen(true)}
+            onEditLast={
+              editTarget
+                ? () =>
+                    navigate({
+                      pathname: '/measurement',
+                      params: { id: editTarget.id },
+                    })
+                : undefined
+            }
           />
         </View>
       )}

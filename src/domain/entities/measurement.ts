@@ -47,6 +47,26 @@ export function computeInterval(
   return { from, to, consumption, production };
 }
 
+/**
+ * Measurements whose interval has no consumption or no production change
+ * compared to the previous reading.
+ */
+export function findMeasurementsWithoutVariation(
+  measurements: Measurement[],
+): Measurement[] {
+  const sorted = sortMeasurements(measurements);
+  const flagged: Measurement[] = [];
+
+  for (let index = 1; index < sorted.length; index += 1) {
+    const interval = computeInterval(sorted[index - 1], sorted[index]);
+    if (interval.consumption === 0 || interval.production === 0) {
+      flagged.push(sorted[index]);
+    }
+  }
+
+  return flagged;
+}
+
 export function buildIntervals(sorted: Measurement[]): MeasurementInterval[] {
   const intervals: MeasurementInterval[] = [];
 

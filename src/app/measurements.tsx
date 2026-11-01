@@ -14,7 +14,10 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/contexts/toast';
 import type { EnergyBill } from '@/domain/entities/energy-bill';
-import type { Measurement } from '@/domain/entities/measurement';
+import {
+  findMeasurementsWithoutVariation,
+  type Measurement,
+} from '@/domain/entities/measurement';
 import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
 import {
@@ -108,6 +111,16 @@ export default function MeasurementsScreen() {
     );
   }, [measurements, selectedCycle]);
 
+  const withoutVariationIds = useMemo(
+    () =>
+      new Set(
+        findMeasurementsWithoutVariation(measurements).map(
+          (measurement) => measurement.id,
+        ),
+      ),
+    [measurements],
+  );
+
   const openNew = () => navigate('/measurement');
   const openNewBill = () => requireAgentSetup(() => navigate('/bill-scan'));
   const openMeasurement = (id: string) =>
@@ -192,30 +205,48 @@ export default function MeasurementsScreen() {
         ]}>
         <View style={styles.rowHeader}>
           <Text variant="subtitle">{formatDate(item.measuredAt, locale)}</Text>
-          {selecting ? (
-            <View
-              style={[
-                styles.check,
-                {
-                  borderColor: selected ? colors.primary : colors.border,
-                  backgroundColor: selected ? colors.primary : 'transparent',
-                },
-              ]}>
-              {selected ? (
+          <View style={styles.rowHeaderRight}>
+            {withoutVariationIds.has(item.id) ? (
+              <View
+                accessible
+                accessibilityLabel={t('measurements.noVariation')}>
                 <SymbolView
-                  name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                  size={14}
-                  tintColor={colors.onPrimary}
+                  name={{
+                    ios: 'questionmark.circle.fill',
+                    android: 'help',
+                    web: 'help',
+                  }}
+                  size={18}
+                  tintColor={colors.warning}
                 />
-              ) : null}
-            </View>
-          ) : item.endsCycle ? (
-            <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
-              <Text variant="caption" color="warning">
-                {t('measurements.cycleEnd')}
-              </Text>
-            </View>
-          ) : null}
+              </View>
+            ) : null}
+            {selecting ? (
+              <View
+                style={[
+                  styles.check,
+                  {
+                    borderColor: selected ? colors.primary : colors.border,
+                    backgroundColor: selected ? colors.primary : 'transparent',
+                  },
+                ]}>
+                {selected ? (
+                  <SymbolView
+                    name={{ ios: 'checkmark', android: 'check', web: 'check' }}
+                    size={14}
+                    tintColor={colors.onPrimary}
+                  />
+                ) : null}
+              </View>
+            ) : item.endsCycle ? (
+              <View
+                style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
+                <Text variant="caption" color="warning">
+                  {t('measurements.cycleEnd')}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
 
         <View style={styles.metrics}>
@@ -571,6 +602,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  rowHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   check: {
     width: 24,

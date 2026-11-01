@@ -21,6 +21,7 @@ type Props = {
   consumption: EnergyMetric;
   balance: number;
   onQuickAdd?: () => void;
+  onEditLast?: () => void;
 };
 
 const ARROW_UP: SymbolViewProps['name'] = {
@@ -114,6 +115,7 @@ function MetricSection({
           ) : null}
         </>
       ) : null}
+
     </View>
   );
 }
@@ -123,6 +125,7 @@ export function EnergyOverviewCard({
   production,
   balance,
   onQuickAdd,
+  onEditLast,
 }: Props) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
@@ -181,6 +184,56 @@ export function EnergyOverviewCard({
               <Text variant="bodyStrong">{t('measurements.quick.add')}</Text>
               <Text variant="caption" color="textTertiary">
                 {t('measurements.quick.addHint')}
+              </Text>
+            </View>
+            <SymbolView
+              name={{
+                ios: 'chevron.right',
+                android: 'chevron_right',
+                web: 'chevron_right',
+              }}
+              size={16}
+              tintColor={colors.textTertiary}
+            />
+          </Pressable>
+        </>
+      ) : null}
+
+      {onEditLast ? (
+        <>
+          <View
+            style={[styles.actionDivider, { backgroundColor: colors.border }]}
+          />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('dashboard.editLastMeasurement')}
+            onPress={onEditLast}
+            style={({ pressed }) => [
+              styles.action,
+              { opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: colors.accentSoft },
+              ]}>
+              <SymbolView
+                name={{
+                  ios: 'questionmark.circle.fill',
+                  android: 'help',
+                  web: 'help',
+                }}
+                size={18}
+                tintColor={colors.warning}
+              />
+            </View>
+            <View style={styles.actionText}>
+              <Text variant="bodyStrong">
+                {t('dashboard.editLastMeasurement')}
+              </Text>
+              <Text variant="caption" color="textTertiary">
+                {t('dashboard.editLastMeasurementHint')}
               </Text>
             </View>
             <SymbolView

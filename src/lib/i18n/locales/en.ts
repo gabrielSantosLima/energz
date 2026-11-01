@@ -26,6 +26,8 @@ export const en = {
     chartTitle: 'Consumption vs production',
     sinceLastReading: 'Since last reading',
     chartEmpty: 'Add more measurements to see the chart.',
+    editLastMeasurement: 'Edit last measurement',
+    editLastMeasurementHint: 'No consumption or production change.',
     billHistory: 'Bill history',
     billForecast: 'Current bill forecast',
     billForecastHint: 'Based on {{count}} past bills',
@@ -53,6 +55,7 @@ export const en = {
     deleted: 'Measurement deleted',
     deletedMany: '{{count}} measurements deleted',
     cycleEnd: 'Cycle end',
+    noVariation: 'No variation',
     consumption: 'Consumption',
     production: 'Production',
     form: {
