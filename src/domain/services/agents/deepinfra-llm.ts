@@ -99,10 +99,16 @@ function normalizeSystemInstruction(instruction: unknown): string | null {
 
 export class DeepInfraLlm extends BaseLlm {
   private readonly apiKey: string;
+  private readonly abortSignal?: AbortSignal;
 
-  constructor(params: { model: string; apiKey: string }) {
+  constructor(params: {
+    model: string;
+    apiKey: string;
+    abortSignal?: AbortSignal;
+  }) {
     super({ model: params.model });
     this.apiKey = params.apiKey;
+    this.abortSignal = params.abortSignal;
   }
 
   async *generateContentAsync(
@@ -157,7 +163,7 @@ export class DeepInfraLlm extends BaseLlm {
           : undefined,
     };
 
-    const completion = await this.request(body, abortSignal);
+    const completion = await this.request(body, abortSignal ?? this.abortSignal);
 
     const text = completion.choices?.[0]?.message?.content ?? '';
     const usage = completion.usage;
@@ -188,6 +194,10 @@ export class DeepInfraLlm extends BaseLlm {
     abortSignal?: AbortSignal,
   ): Promise<ChatCompletionResponse> {
     let lastError: unknown;
+
+    if (abortSignal?.aborted) {
+      throw new Error('The request was canceled.');
+    }
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
       const controller = new AbortController();

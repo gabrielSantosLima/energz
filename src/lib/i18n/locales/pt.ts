@@ -416,6 +416,8 @@ export const pt = {
     rotateLeft: 'Girar à esquerda',
     rotateRight: 'Girar à direita',
     rotating: 'Girando...',
+    slow: 'Isso está demorando mais que o normal.',
+    cancel: 'Cancelar',
     processing: 'Processando...',
     missing: 'Nenhuma imagem processada. Tire a foto novamente.',
     backToCamera: 'Voltar para a câmera',

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,6 +18,8 @@ import { useBillScanStore } from '@/store/bill-scan-store';
 import { useDevStore } from '@/store/dev-store';
 import { radius, spacing } from '@/theme';
 
+const SLOW_REQUEST_MS = 30_000;
+
 export default function BillPreviewScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -26,11 +28,29 @@ export default function BillPreviewScreen() {
   const navigate = useSafeNavigation();
   const { parse } = useBillParser();
   const resetDraft = useBillDraftStore((state) => state.resetDraft);
+  const draft = useBillDraftStore((state) => state.draft);
   const scan = useBillScanStore((state) => state.scan);
   const setScan = useBillScanStore((state) => state.setScan);
   const devMode = useDevStore((state) => state.devMode);
   const [processing, setProcessing] = useState(false);
   const [rotating, setRotating] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const slowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSlowTimer = () => {
+    if (slowTimerRef.current) {
+      clearTimeout(slowTimerRef.current);
+      slowTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      clearSlowTimer();
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const rotate = async (degrees: number) => {
     if (!scan.processedUri || rotating || processing) {
@@ -56,22 +76,80 @@ export default function BillPreviewScreen() {
     if (!scan.processedUri || processing || rotating) {
       return;
     }
+
+    const processedUri = scan.processedUri;
+
+    // The same photo was already processed: keep the previous result instead
+    // of running OCR and the AI request again.
+    if (scan.parsedUri === processedUri && (devMode || draft)) {
+      navigate(devMode ? '/dev' : '/bill-review');
+      return;
+    }
+
     setProcessing(true);
+    setSlow(false);
     setScan({ error: null });
     resetDraft();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    slowTimerRef.current = setTimeout(
+      () => setSlow(true),
+      SLOW_REQUEST_MS,
+    );
+
     try {
       const startedAt = Date.now();
-      const text = await processor.recognizeText(scan.processedUri);
-      setScan({ rawText: text, ocrMs: Date.now() - startedAt });
-      if (!devMode) {
-        await parse(text, scan.processedUri);
+      const text = await processor.recognizeText(processedUri);
+
+      if (controller.signal.aborted) {
+        return;
       }
+
+      setScan({ rawText: text, ocrMs: Date.now() - startedAt });
+
+      if (!devMode) {
+        const result = await parse(
+          text,
+          processedUri,
+          controller.signal,
+        );
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (result) {
+          setScan({ parsedUri: processedUri });
+        }
+      } else {
+        setScan({ parsedUri: processedUri });
+      }
+
       navigate(devMode ? '/dev' : '/bill-review');
     } catch (error) {
-      setScan({ error: error instanceof Error ? error.message : String(error) });
+      if (!controller.signal.aborted) {
+        setScan({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
     } finally {
-      setProcessing(false);
+      // Ignore the cleanup of a canceled attempt that was already replaced by a
+      // newer one.
+      if (abortRef.current === controller) {
+        clearSlowTimer();
+        abortRef.current = null;
+        setSlow(false);
+        setProcessing(false);
+      }
     }
+  };
+
+  const cancel = () => {
+    abortRef.current?.abort();
+    clearSlowTimer();
+    setSlow(false);
+    setProcessing(false);
   };
 
   if (!scan.processedUri) {
@@ -185,6 +263,20 @@ export default function BillPreviewScreen() {
               ? t('billPreview.rotating')
               : t('billPreview.processing')}
           </Text>
+
+          {slow && processing ? (
+            <View style={styles.slowBlock}>
+              <Text variant="caption" style={styles.whiteText}>
+                {t('billPreview.slow')}
+              </Text>
+              <Button
+                label={t('billPreview.cancel')}
+                variant="secondary"
+                onPress={cancel}
+                style={styles.cancelButton}
+              />
+            </View>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -245,4 +337,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   whiteText: { color: '#FFFFFF' },
+  slowBlock: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  cancelButton: {
+    minWidth: 200,
+  },
 });

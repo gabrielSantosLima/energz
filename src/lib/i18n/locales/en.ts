@@ -414,6 +414,8 @@ export const en = {
     rotateLeft: 'Rotate left',
     rotateRight: 'Rotate right',
     rotating: 'Rotating...',
+    slow: 'This is taking longer than usual.',
+    cancel: 'Cancel',
     processing: 'Processing...',
     missing: 'No processed image. Take a photo again.',
     backToCamera: 'Back to camera',

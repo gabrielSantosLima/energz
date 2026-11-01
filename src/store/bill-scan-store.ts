@@ -4,6 +4,8 @@ export type BillScanResult = {
   originalUri: string | null;
   processedUri: string | null;
   rawText: string;
+  /** Processed image uri that already went through OCR + AI parsing. */
+  parsedUri: string | null;
   processMs: number | null;
   ocrMs: number | null;
   detected: boolean | null;
@@ -14,6 +16,7 @@ const initialScan: BillScanResult = {
   originalUri: null,
   processedUri: null,
   rawText: '',
+  parsedUri: null,
   processMs: null,
   ocrMs: null,
   detected: null,

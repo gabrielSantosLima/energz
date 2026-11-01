@@ -27,6 +27,13 @@ export class AgentNotConfiguredError extends Error {
   }
 }
 
+export class BillParseCanceledError extends Error {
+  constructor() {
+    super('The bill parsing was canceled.');
+    this.name = 'BillParseCanceledError';
+  }
+}
+
 export class BillParseError extends Error {
   constructor(
     message: string,
@@ -71,6 +78,7 @@ export class ParseEnergyBillUseCase {
   async execute(
     ocrText: string,
     imageUri?: string,
+    signal?: AbortSignal,
   ): Promise<ParseEnergyBillResult> {
     const settings = await this.getAgentSettings.execute();
     if (!settings) {
@@ -80,9 +88,17 @@ export class ParseEnergyBillUseCase {
     const startedAt = Date.now();
     const image = imageUri ? await this.loadImage(imageUri) : null;
 
+    if (signal?.aborted) {
+      throw new BillParseCanceledError();
+    }
+
     try {
-      return await this.parse(settings, ocrText, image, startedAt);
+      return await this.parse(settings, ocrText, image, startedAt, signal);
     } catch (error) {
+      if (signal?.aborted) {
+        throw new BillParseCanceledError();
+      }
+
       const canRetryWithoutImage =
         image !== null &&
         error instanceof DeepInfraRequestError &&
@@ -92,7 +108,7 @@ export class ParseEnergyBillUseCase {
         throw error;
       }
 
-      return this.parse(settings, ocrText, null, startedAt);
+      return this.parse(settings, ocrText, null, startedAt, signal);
     }
   }
 
@@ -108,10 +124,12 @@ export class ParseEnergyBillUseCase {
     ocrText: string,
     image: AttachedImage | null,
     startedAt: number,
+    signal?: AbortSignal,
   ): Promise<ParseEnergyBillResult> {
     const model = new DeepInfraLlm({
       model: settings.model,
       apiKey: settings.apiKey,
+      abortSignal: signal,
     });
     const agent = createBillParserAgent(model);
     const runner = new InMemoryRunner({ agent, appName: 'energz' });
@@ -120,6 +138,10 @@ export class ParseEnergyBillUseCase {
     let usage: ParseEnergyBillResult['usage'] = null;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+      if (signal?.aborted) {
+        throw new BillParseCanceledError();
+      }
+
       const repair =
         attempt > 0
           ? `\n\nYour previous answer failed validation:\n${lastIssues.join('\n')}\nReturn a corrected JSON object only.`
