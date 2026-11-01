@@ -98,6 +98,12 @@ export const en = {
   },
   reports: {
     title: 'Reports',
+    subtitle: 'Choose the report you want to generate.',
+    measurementsTitle: 'Measurements report',
+    measurementsDescription: 'Cycles, consumption, production and balance.',
+    measurementsSubtitle: 'Period, totals and cycle summary.',
+    billsTitle: 'Bills report',
+    billsDescription: 'Spending, charges and flags from your energy bills.',
     period: 'Period',
     date: 'Date',
     production: 'Production',

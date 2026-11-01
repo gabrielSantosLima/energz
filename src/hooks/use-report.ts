@@ -53,7 +53,7 @@ export function useReport() {
       const html = buildReportHtml(
         report,
         {
-          title: t('reports.title'),
+          title: t('reports.measurementsTitle'),
           period: t('reports.period'),
           production: t('reports.production'),
           consumption: t('reports.consumption'),

@@ -98,6 +98,12 @@ export const pt = {
   },
   reports: {
     title: 'Relatórios',
+    subtitle: 'Escolha o relatório que deseja gerar.',
+    measurementsTitle: 'Relatório de medições',
+    measurementsDescription: 'Ciclos, consumo, produção e saldo.',
+    measurementsSubtitle: 'Período, totais e resumo do ciclo.',
+    billsTitle: 'Relatório de contas',
+    billsDescription: 'Gastos, cobranças e bandeiras das suas contas de energia.',
     period: 'Período',
     date: 'Data',
     production: 'Produção',

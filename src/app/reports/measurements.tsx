@@ -1,5 +1,7 @@
+import { router } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useMemo, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ReportPreview } from '@/components/reports/report-preview';
 import { Button } from '@/components/ui/button';
@@ -9,11 +11,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { ThemeOverride } from '@/contexts/theme-context';
 import { useReport } from '@/hooks/use-report';
+import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatShortDate } from '@/lib/format';
 import { lightColors, radius, spacing } from '@/theme';
 
-export default function ReportsScreen() {
+export default function MeasurementsReportScreen() {
+  const { colors } = useTheme();
   const { t, locale } = useTranslation();
   const {
     cycles,
@@ -43,7 +47,25 @@ export default function ReportsScreen() {
 
   return (
     <Screen scroll>
-      <Text variant="title">{t('reports.title')}</Text>
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          onPress={() => router.back()}
+          style={[styles.back, { backgroundColor: colors.surfaceMuted }]}>
+          <SymbolView
+            name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }}
+            size={20}
+            tintColor={colors.textPrimary}
+          />
+        </Pressable>
+        <View style={styles.headerText}>
+          <Text variant="title">{t('reports.measurementsTitle')}</Text>
+          <Text variant="caption" color="textSecondary">
+            {t('reports.measurementsSubtitle')}
+          </Text>
+        </View>
+      </View>
 
       {cycles.length > 0 ? (
         <View style={styles.filter}>
@@ -88,8 +110,25 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  back: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
   filter: {
-    marginTop: spacing.lg,
+    marginTop: 0,
   },
   preview: {
     marginTop: spacing.lg,
