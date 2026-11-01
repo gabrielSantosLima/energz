@@ -51,6 +51,7 @@ function MeasurementForm({
   onSubmit,
   onDelete,
 }: FormProps) {
+  const { colors } = useTheme();
   const { t, locale } = useTranslation();
   const toast = useToast();
 
@@ -80,6 +81,17 @@ function MeasurementForm({
   const minConsumption = restart ? 0 : (previous?.consumption ?? 0);
   const minProduction = restart ? 0 : (previous?.production ?? 0);
   const canRestore = Boolean(initial) || Boolean(previous);
+  const isEditing = Boolean(initial);
+  const consumptionNoVariation =
+    isEditing &&
+    previous !== null &&
+    !restart &&
+    consumption === previous.consumption;
+  const productionNoVariation =
+    isEditing &&
+    previous !== null &&
+    !restart &&
+    production === previous.production;
 
   const consumptionError =
     consumption <= 0
@@ -153,6 +165,31 @@ function MeasurementForm({
           onChange={setDate}
         />
 
+        {consumptionNoVariation || productionNoVariation ? (
+          <View
+            style={[
+              styles.variationNotice,
+              {
+                backgroundColor: colors.accentSoft,
+                borderColor: colors.warning,
+              },
+            ]}>
+            <Text variant="caption" color="warning">
+              {t('measurements.form.noVariationHint')}
+            </Text>
+            {consumptionNoVariation ? (
+              <Text variant="caption" color="warning">
+                {t('measurements.form.noVariationConsumption')}
+              </Text>
+            ) : null}
+            {productionNoVariation ? (
+              <Text variant="caption" color="warning">
+                {t('measurements.form.noVariationProduction')}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <NumberField
           label={t('measurements.form.consumption')}
           value={consumption}
@@ -161,6 +198,7 @@ function MeasurementForm({
           unit="kWh"
           error={consumptionError ?? undefined}
           actionLabel={canRestore ? t('measurements.form.restore') : undefined}
+          highlight={consumptionNoVariation}
         />
 
         <NumberField
@@ -171,6 +209,7 @@ function MeasurementForm({
           unit="kWh"
           error={productionError ?? undefined}
           actionLabel={canRestore ? t('measurements.form.restore') : undefined}
+          highlight={productionNoVariation}
         />
 
         {!restart && previous ? (
@@ -309,6 +348,12 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.lg,
     paddingBottom: spacing['2xl'],
+  },
+  variationNotice: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: spacing.md,
+    gap: spacing.xs,
   },
   switchRow: {
     flexDirection: 'row',

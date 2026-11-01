@@ -17,6 +17,7 @@ type Props = {
   unit?: string;
   error?: string;
   actionLabel?: string;
+  highlight?: boolean;
 };
 
 export function NumberField({
@@ -27,6 +28,7 @@ export function NumberField({
   unit,
   error,
   actionLabel,
+  highlight = false,
 }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -105,8 +107,14 @@ export function NumberField({
           style={[
             styles.field,
             {
-              backgroundColor: colors.surfaceMuted,
-              borderColor: error ? colors.danger : colors.border,
+              backgroundColor: highlight
+                ? colors.accentSoft
+                : colors.surfaceMuted,
+              borderColor: error
+                ? colors.danger
+                : highlight
+                  ? colors.warning
+                  : colors.border,
             },
           ]}>
           {editing ? (
