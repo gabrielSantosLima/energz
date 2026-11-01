@@ -259,6 +259,18 @@ check("measurement saved", wait_text("Medição registrada"))
 tap_text("Concluir")
 check("quick sheet closes", wait_text("Registrar leitura de hoje"))
 
+# 2b. Quick edit action (only when a measurement has no variation)
+go("energz:///")
+root = dump()
+edit_action = find(root, text="Editar última medição")
+if edit_action is not None:
+    tap(edit_action)
+    check("quick edit opens", wait_text("Editar medição"))
+    adb("shell", "input", "keyevent", "4")
+    time.sleep(1.5)
+else:
+    print("SKIP quick edit: no measurement without variation")
+
 # 3. Measurements list
 check("measurements tab opens", nav("Contas e Medições"))
 check("new measurement listed", wait_text(f"{next_consumption} kWh"))
