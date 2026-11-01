@@ -3,11 +3,22 @@ import { injectable } from 'tsyringe';
 
 import { createBillParserAgent } from '@/domain/agents/bill-parser-agent';
 import { billDraftSchema } from '@/domain/agents/bill-parser-schema';
+import type { AgentSettings } from '@/domain/entities/agent-settings';
 import type { BillDraft } from '@/domain/entities/energy-bill';
-import { DeepInfraLlm } from '@/domain/services/agents/deepinfra-llm';
+import {
+  DeepInfraLlm,
+  DeepInfraRequestError,
+} from '@/domain/services/agents/deepinfra-llm';
+import { ImageDataReader } from '@/domain/services/image-data-reader';
 import { GetAgentSettingsUseCase } from '@/domain/useCases/agents/get-agent-settings';
 
 const MAX_ATTEMPTS = 2;
+
+/**
+ * Models without vision support reject image parts. When that happens the
+ * request is retried with the OCR text only.
+ */
+const IMAGE_FALLBACK_STATUSES = new Set([400, 404, 413, 422]);
 
 export class AgentNotConfiguredError extends Error {
   constructor() {
@@ -36,6 +47,11 @@ export type ParseEnergyBillResult = {
   } | null;
 };
 
+type AttachedImage = {
+  data: string;
+  mimeType: string;
+};
+
 function extractJson(text: string): string {
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
@@ -47,15 +63,52 @@ function extractJson(text: string): string {
 
 @injectable()
 export class ParseEnergyBillUseCase {
-  constructor(private readonly getAgentSettings: GetAgentSettingsUseCase) {}
+  constructor(
+    private readonly getAgentSettings: GetAgentSettingsUseCase,
+    private readonly images: ImageDataReader,
+  ) {}
 
-  async execute(ocrText: string): Promise<ParseEnergyBillResult> {
+  async execute(
+    ocrText: string,
+    imageUri?: string,
+  ): Promise<ParseEnergyBillResult> {
     const settings = await this.getAgentSettings.execute();
     if (!settings) {
       throw new AgentNotConfiguredError();
     }
 
     const startedAt = Date.now();
+    const image = imageUri ? await this.loadImage(imageUri) : null;
+
+    try {
+      return await this.parse(settings, ocrText, image, startedAt);
+    } catch (error) {
+      const canRetryWithoutImage =
+        image !== null &&
+        error instanceof DeepInfraRequestError &&
+        IMAGE_FALLBACK_STATUSES.has(error.status);
+
+      if (!canRetryWithoutImage) {
+        throw error;
+      }
+
+      return this.parse(settings, ocrText, null, startedAt);
+    }
+  }
+
+  private async loadImage(uri: string): Promise<AttachedImage> {
+    return {
+      data: await this.images.readBase64(uri),
+      mimeType: this.images.mimeType(uri),
+    };
+  }
+
+  private async parse(
+    settings: AgentSettings,
+    ocrText: string,
+    image: AttachedImage | null,
+    startedAt: number,
+  ): Promise<ParseEnergyBillResult> {
     const model = new DeepInfraLlm({
       model: settings.model,
       apiKey: settings.apiKey,
@@ -71,10 +124,25 @@ export class ParseEnergyBillUseCase {
         attempt > 0
           ? `\n\nYour previous answer failed validation:\n${lastIssues.join('\n')}\nReturn a corrected JSON object only.`
           : '';
+      const imageHint = image
+        ? '\n\nA photo of the bill is attached. Use it to confirm values when the OCR text is ambiguous or corrupted.'
+        : '';
 
       const message = {
-        role: 'user',
-        parts: [{ text: `BILL OCR TEXT:\n${ocrText}${repair}` }],
+        role: 'user' as const,
+        parts: [
+          { text: `BILL OCR TEXT:\n${ocrText}${imageHint}${repair}` },
+          ...(image
+            ? [
+                {
+                  inlineData: {
+                    mimeType: image.mimeType,
+                    data: image.data,
+                  },
+                },
+              ]
+            : []),
+        ],
       };
 
       let output = '';

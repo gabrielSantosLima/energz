@@ -12,9 +12,12 @@ const REQUEST_TIMEOUT_MS = 45_000;
 const MAX_ATTEMPTS = 2;
 
 type Content = LlmRequest['contents'][number];
+type ChatContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } };
 type ChatMessage = {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  content: string | ChatContentPart[];
 };
 
 type ChatCompletionResponse = {
@@ -55,6 +58,19 @@ function contentToText(content: Content): string {
       return '';
     })
     .join('');
+}
+
+function contentToImages(content: Content): ChatContentPart[] {
+  return (content.parts ?? [])
+    .map((part) => part.inlineData)
+    .filter(
+      (blob): blob is { data: string; mimeType: string } =>
+        typeof blob?.data === 'string' && typeof blob?.mimeType === 'string',
+    )
+    .map((blob) => ({
+      type: 'image_url' as const,
+      image_url: { url: `data:${blob.mimeType};base64,${blob.data}` },
+    }));
 }
 
 function normalizeSystemInstruction(instruction: unknown): string | null {
@@ -116,7 +132,16 @@ export class DeepInfraLlm extends BaseLlm {
     for (const content of llmRequest.contents) {
       const role = content.role === 'model' ? 'assistant' : 'user';
       const text = contentToText(content);
-      if (text) {
+      const images = contentToImages(content);
+
+      if (images.length > 0) {
+        const parts: ChatContentPart[] = [];
+        if (text) {
+          parts.push({ type: 'text', text });
+        }
+        parts.push(...images);
+        messages.push({ role, content: parts });
+      } else if (text) {
         messages.push({ role, content: text });
       }
     }

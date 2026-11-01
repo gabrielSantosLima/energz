@@ -11,6 +11,7 @@ import { DatabaseBackupService } from '@/domain/services/database-backup-service
 import { EnergyBillRepository } from '@/domain/services/energy-bill-repository';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { ImageCapturer } from '@/domain/services/image-capturer';
+import { ImageDataReader } from '@/domain/services/image-data-reader';
 import { MeasurementRepository } from '@/domain/services/measurement-repository';
 import { NotificationService } from '@/domain/services/notification-service';
 import { NotificationSettingsStorage } from '@/domain/services/notification-settings-storage';
@@ -75,6 +76,7 @@ container.registerSingleton(EnergyBillRepository);
 container.registerSingleton(IdGenerator);
 container.registerSingleton(NotificationService);
 container.registerSingleton(BillImageProcessor);
+container.registerSingleton(ImageDataReader);
 container.registerSingleton(AgentSettingsStorage);
 container.registerSingleton(BackupSettingsStorage);
 container.registerSingleton(DatabaseBackupService);

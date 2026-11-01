@@ -4,7 +4,9 @@ import { billDraftSchema } from '@/domain/agents/bill-parser-schema';
 
 export const BILL_PARSER_INSTRUCTION = `You extract structured data from Brazilian electricity bills.
 
-The user message contains raw OCR text from a scanned bill. Return only JSON that matches the provided schema.
+The user message contains raw OCR text from a scanned bill and, when available, a photo of the same bill. Return only JSON that matches the provided schema.
+
+Use the OCR text as the primary source. Consult the photo to confirm values, read text that the OCR missed or corrupted, and resolve ambiguous fields.
 
 Rules:
 - amountCents is the total amount to pay, in integer cents (for example 91,12 -> 9112).

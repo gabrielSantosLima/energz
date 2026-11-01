@@ -64,7 +64,7 @@ export default function BillPreviewScreen() {
       const text = await processor.recognizeText(scan.processedUri);
       setScan({ rawText: text, ocrMs: Date.now() - startedAt });
       if (!devMode) {
-        await parse(text);
+        await parse(text, scan.processedUri);
       }
       navigate(devMode ? '/dev' : '/bill-review');
     } catch (error) {

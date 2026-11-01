@@ -8,7 +8,10 @@ import { useInjection } from '@/hooks/use-injection';
 import { useBillDraftStore } from '@/store/bill-draft-store';
 
 type UseBillParser = {
-  parse: (ocrText: string) => Promise<ParseEnergyBillResult | null>;
+  parse: (
+    ocrText: string,
+    imageUri?: string,
+  ) => Promise<ParseEnergyBillResult | null>;
 };
 
 export function useBillParser(): UseBillParser {
@@ -17,9 +20,9 @@ export function useBillParser(): UseBillParser {
   const setParseError = useBillDraftStore((state) => state.setParseError);
 
   const parse = useCallback(
-    async (ocrText: string) => {
+    async (ocrText: string, imageUri?: string) => {
       try {
-        const result = await parseEnergyBill.execute(ocrText);
+        const result = await parseEnergyBill.execute(ocrText, imageUri);
         setDraft(result.draft);
         setParseError(null);
         return result;

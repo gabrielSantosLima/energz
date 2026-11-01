@@ -39,7 +39,7 @@ export default function DevScreen() {
     setParseResult(null);
     resetDraft();
     try {
-      const result = await parse(scan.rawText);
+      const result = await parse(scan.rawText, scan.processedUri ?? undefined);
       if (result) {
         setParseResult({
           json: JSON.stringify(result.draft, null, 2),
