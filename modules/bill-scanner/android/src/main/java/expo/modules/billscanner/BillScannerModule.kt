@@ -76,6 +76,10 @@ class BillScannerModule : Module() {
       recognizeText(uri)
     }
 
+    AsyncFunction("rotateImage") { uri: String, degrees: Int ->
+      rotateImage(uri, degrees)
+    }
+
     AsyncFunction("scanDocument") { promise: Promise ->
       startDocumentScan(promise)
     }
@@ -159,6 +163,49 @@ class BillScannerModule : Module() {
       return result.text
     } finally {
       recognizer.close()
+    }
+  }
+
+  private fun rotateImage(uri: String, degrees: Int): String {
+    if (uri.isEmpty()) {
+      throw IllegalArgumentException("The image uri is required.")
+    }
+
+    val normalized = ((degrees % 360) + 360) % 360
+    if (normalized == 0) {
+      return uri
+    }
+
+    val bitmap = decodeBitmap(uri)
+      ?: throw IllegalArgumentException("Could not decode the bill image.")
+    val source = Mat()
+    Utils.bitmapToMat(bitmap, source)
+    bitmap.recycle()
+
+    val rotated = Mat()
+
+    try {
+      val rotation = when (normalized) {
+        90 -> Core.ROTATE_90_CLOCKWISE
+        180 -> Core.ROTATE_180
+        else -> Core.ROTATE_90_COUNTERCLOCKWISE
+      }
+      Core.rotate(source, rotated, rotation)
+
+      val output = File(context.cacheDir, "bill-rotated-${System.currentTimeMillis()}.jpg")
+      val written = Imgcodecs.imwrite(
+        output.absolutePath,
+        rotated,
+        MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 92),
+      )
+      if (!written) {
+        throw IllegalStateException("Could not write the rotated image.")
+      }
+
+      return Uri.fromFile(output).toString()
+    } finally {
+      rotated.release()
+      source.release()
     }
   }
 

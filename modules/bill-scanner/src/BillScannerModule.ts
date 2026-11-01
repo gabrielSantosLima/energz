@@ -5,6 +5,7 @@ import type { ProcessBillOptions, ProcessBillResult } from './BillScanner.types'
 declare class BillScannerModule extends NativeModule {
   processBill(options: ProcessBillOptions): Promise<ProcessBillResult>;
   recognizeText(uri: string): Promise<string>;
+  rotateImage(uri: string, degrees: number): Promise<string>;
   scanDocument(): Promise<{ uri: string; pageCount: number }>;
 }
 

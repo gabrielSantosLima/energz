@@ -411,6 +411,9 @@ export const en = {
   billPreview: {
     retake: 'Retake',
     usePhoto: 'Use photo',
+    rotateLeft: 'Rotate left',
+    rotateRight: 'Rotate right',
+    rotating: 'Rotating...',
     processing: 'Processing...',
     missing: 'No processed image. Take a photo again.',
     backToCamera: 'Back to camera',

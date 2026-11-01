@@ -413,6 +413,9 @@ export const pt = {
   billPreview: {
     retake: 'Tirar outra',
     usePhoto: 'Usar foto',
+    rotateLeft: 'Girar à esquerda',
+    rotateRight: 'Girar à direita',
+    rotating: 'Girando...',
     processing: 'Processando...',
     missing: 'Nenhuma imagem processada. Tire a foto novamente.',
     backToCamera: 'Voltar para a câmera',

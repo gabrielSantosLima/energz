@@ -27,6 +27,10 @@ export class BillImageProcessor {
     return BillScanner.recognizeText(uri);
   }
 
+  async rotate(uri: string, degrees: number): Promise<string> {
+    return BillScanner.rotateImage(uri, degrees);
+  }
+
   async scanDocument(): Promise<{ uri: string; pageCount: number }> {
     return BillScanner.scanDocument();
   }

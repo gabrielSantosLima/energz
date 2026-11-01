@@ -30,9 +30,30 @@ export default function BillPreviewScreen() {
   const setScan = useBillScanStore((state) => state.setScan);
   const devMode = useDevStore((state) => state.devMode);
   const [processing, setProcessing] = useState(false);
+  const [rotating, setRotating] = useState(false);
+
+  const rotate = async (degrees: number) => {
+    if (!scan.processedUri || rotating || processing) {
+      return;
+    }
+
+    setRotating(true);
+    setScan({ error: null });
+
+    try {
+      const uri = await processor.rotate(scan.processedUri, degrees);
+      setScan({ processedUri: uri });
+    } catch (error) {
+      setScan({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setRotating(false);
+    }
+  };
 
   const proceed = async () => {
-    if (!scan.processedUri || processing) {
+    if (!scan.processedUri || processing || rotating) {
       return;
     }
     setProcessing(true);
@@ -102,19 +123,67 @@ export default function BillPreviewScreen() {
             {scan.error}
           </Text>
         ) : null}
+        <View style={styles.rotateRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('billPreview.rotateLeft')}
+            disabled={rotating || processing}
+            onPress={() => void rotate(-90)}
+            style={({ pressed }) => [
+              styles.rotateButton,
+              { opacity: pressed ? 0.8 : 1 },
+            ]}>
+            <SymbolView
+              name={{
+                ios: 'rotate.left',
+                android: 'rotate_left',
+                web: 'rotate_left',
+              }}
+              size={22}
+              tintColor="#FFFFFF"
+            />
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('billPreview.rotateRight')}
+            disabled={rotating || processing}
+            onPress={() => void rotate(90)}
+            style={({ pressed }) => [
+              styles.rotateButton,
+              { opacity: pressed ? 0.8 : 1 },
+            ]}>
+            <SymbolView
+              name={{
+                ios: 'rotate.right',
+                android: 'rotate_right',
+                web: 'rotate_right',
+              }}
+              size={22}
+              tintColor="#FFFFFF"
+            />
+          </Pressable>
+        </View>
+
         <Button
           label={t('billPreview.retake')}
           variant="secondary"
           onPress={() => router.back()}
         />
-        <Button label={t('billPreview.usePhoto')} onPress={proceed} />
+        <Button
+          label={t('billPreview.usePhoto')}
+          onPress={proceed}
+          disabled={rotating}
+        />
       </View>
 
-      {processing ? (
+      {processing || rotating ? (
         <View style={styles.overlay}>
           <ActivityIndicator color="#FFFFFF" />
           <Text variant="caption" style={styles.whiteText}>
-            {t('billPreview.processing')}
+            {rotating
+              ? t('billPreview.rotating')
+              : t('billPreview.processing')}
           </Text>
         </View>
       ) : null}
@@ -131,6 +200,19 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   centerText: { textAlign: 'center' },
+  rotateRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  rotateButton: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
   back: {
     position: 'absolute',
     left: spacing.lg,
