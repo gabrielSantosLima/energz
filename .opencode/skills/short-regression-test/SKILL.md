@@ -53,10 +53,13 @@ script update, update `scripts/regression.py` to cover them before running:
 When the script changes:
 
 1. Run it and confirm it passes.
-2. Commit only the script, e.g.
-   `git add .opencode/skills/short-regression-test/scripts/regression.py` and
-   `git commit -m "test: cover <feature> in short regression"`.
-3. Do not push unless the user asks.
+2. Commit **only** files inside `.opencode/skills/short-regression-test/`
+   (the script and, when needed, this `SKILL.md`). Never stage or commit
+   application code, even when the working tree contains feature changes.
+   Check `git status` first and stage explicit paths only; never `git add .`
+   or `git add -A`.
+3. Suggested message: `test: cover <feature> in short regression`.
+4. Do not push unless the user asks.
 
 ## Step 3 — Run
 
@@ -91,6 +94,9 @@ Then add:
 ## Rules
 
 - Never change application code from this skill; only update the script.
+- Never commit project implementations. The only commits allowed here are
+  updates to files under `.opencode/skills/short-regression-test/`.
+- Leave unrelated working-tree changes untouched and unstaged.
 - Never delete user data to make a check pass.
 - Do not rebuild the native app unless a check fails because of native changes;
   JS changes are picked up by Metro.
