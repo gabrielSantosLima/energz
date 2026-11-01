@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { NumberField } from '@/components/ui/number-field';
@@ -45,6 +46,7 @@ export function QuickMeasureSheet({ visible, ...formProps }: Props) {
 
 function QuickMeasureForm({ lastReading, onClose, onSubmit }: FormProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { t, locale } = useTranslation();
 
   const [consumption, setConsumption] = useState(
@@ -145,7 +147,10 @@ function QuickMeasureForm({ lastReading, onClose, onSubmit }: FormProps) {
             <ScrollView
               bounces={false}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.content}>
+              contentContainerStyle={[
+                styles.content,
+                { paddingBottom: insets.bottom + spacing.lg },
+              ]}>
               <View style={styles.header}>
                 <View style={styles.headerText}>
                   <Text variant="heading">
@@ -289,7 +294,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing['2xl'],
     gap: spacing.md,
   },
   header: {
