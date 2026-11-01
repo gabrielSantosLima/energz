@@ -92,13 +92,8 @@ export const en = {
       close: 'Close',
       invalid: 'Fix the values below to save.',
       error: 'Could not save the measurement.',
-      undoError: 'Could not undo the measurement.',
       savedTitle: 'Measurement saved',
-      savedAt: 'Registered at {{time}}',
-      savedSummary:
-        'Consumption {{consumption}} ({{consumptionDelta}}) · Production {{production}} ({{productionDelta}}) kWh',
-      done: 'Done',
-      undo: 'Undo',
+      undoDone: 'Measurement removed',
     },
   },
   reports: {

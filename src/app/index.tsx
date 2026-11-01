@@ -103,17 +103,20 @@ export default function DashboardScreen() {
       });
 
       refresh();
+      toast.show(t('measurements.quick.savedTitle'), 'success', {
+        label: t('common.undo'),
+        onPress: () => {
+          void (async () => {
+            await deleteMeasurement(created.id);
+            refresh();
+            toast.show(t('measurements.quick.undoDone'), 'info');
+          })();
+        },
+      });
+
       return created;
     },
-    [createMeasurement, refresh],
-  );
-
-  const handleQuickUndo = useCallback(
-    async (id: string) => {
-      await deleteMeasurement(id);
-      await refresh();
-    },
-    [deleteMeasurement, refresh],
+    [createMeasurement, deleteMeasurement, refresh, t, toast],
   );
 
   const currentCycle =
@@ -403,7 +406,6 @@ export default function DashboardScreen() {
         lastReading={lastReading}
         onClose={() => setQuickOpen(false)}
         onSubmit={handleQuickSubmit}
-        onUndo={handleQuickUndo}
       />
     </Screen>
   );

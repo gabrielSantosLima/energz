@@ -92,13 +92,8 @@ export const pt = {
       close: 'Fechar',
       invalid: 'Ajuste os valores abaixo para salvar.',
       error: 'Não foi possível salvar a medição.',
-      undoError: 'Não foi possível desfazer a medição.',
       savedTitle: 'Medição registrada',
-      savedAt: 'Registrada às {{time}}',
-      savedSummary:
-        'Consumo {{consumption}} ({{consumptionDelta}}) · Produção {{production}} ({{productionDelta}}) kWh',
-      done: 'Concluir',
-      undo: 'Desfazer',
+      undoDone: 'Medição removida',
     },
   },
   reports: {

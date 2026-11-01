@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/button';
 import { NumberField } from '@/components/ui/number-field';
@@ -17,7 +17,7 @@ import { Text } from '@/components/ui/text';
 import type { Measurement } from '@/domain/entities/measurement';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatNumber, formatShortDate, formatTime } from '@/lib/format';
+import { formatNumber, formatShortDate } from '@/lib/format';
 import { radius, spacing } from '@/theme';
 
 export type QuickMeasurementInput = {
@@ -31,12 +31,11 @@ type Props = {
   lastReading: Measurement | null;
   onClose: () => void;
   onSubmit: (input: QuickMeasurementInput) => Promise<Measurement>;
-  onUndo: (id: string) => Promise<void>;
 };
 
 type FormProps = Omit<Props, 'visible'>;
 
-type Phase = 'idle' | 'saving' | 'saved';
+type Phase = 'idle' | 'saving';
 
 export function QuickMeasureSheet({ visible, ...formProps }: Props) {
   // Mounting only while visible gives every open a fresh form with the values
@@ -44,12 +43,7 @@ export function QuickMeasureSheet({ visible, ...formProps }: Props) {
   return visible ? <QuickMeasureForm {...formProps} /> : null;
 }
 
-function QuickMeasureForm({
-  lastReading,
-  onClose,
-  onSubmit,
-  onUndo,
-}: FormProps) {
+function QuickMeasureForm({ lastReading, onClose, onSubmit }: FormProps) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
 
@@ -58,12 +52,6 @@ function QuickMeasureForm({
   );
   const [production, setProduction] = useState(lastReading?.production ?? 0);
   const [phase, setPhase] = useState<Phase>('idle');
-  const [saved, setSaved] = useState<{
-    measurement: Measurement;
-    at: Date;
-    previousConsumption: number;
-    previousProduction: number;
-  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const minConsumption = lastReading?.consumption ?? 0;
@@ -101,18 +89,12 @@ function QuickMeasureForm({
     setError(null);
 
     try {
-      const measurement = await onSubmit({
+      await onSubmit({
         measuredAt: new Date(),
         consumption,
         production,
       });
-      setSaved({
-        measurement,
-        at: new Date(),
-        previousConsumption: lastReading?.consumption ?? 0,
-        previousProduction: lastReading?.production ?? 0,
-      });
-      setPhase('saved');
+      onClose();
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -123,34 +105,7 @@ function QuickMeasureForm({
     }
   };
 
-  const undo = async () => {
-    if (!saved || busy) {
-      return;
-    }
-
-    setPhase('saving');
-    setError(null);
-
-    try {
-      await onUndo(saved.measurement.id);
-      onClose();
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : t('measurements.quick.undoError'),
-      );
-      setPhase('saved');
-    }
-  };
-
   const today = formatShortDate(new Date(), locale);
-  const consumedDelta = saved
-    ? saved.measurement.consumption - saved.previousConsumption
-    : 0;
-  const producedDelta = saved
-    ? saved.measurement.production - saved.previousProduction
-    : 0;
 
   return (
     <Modal
@@ -178,7 +133,7 @@ function QuickMeasureForm({
           />
 
           <Animated.View
-            entering={SlideInDown.duration(220)}
+            entering={FadeIn.duration(120)}
             style={[
               styles.sheet,
               { backgroundColor: colors.surface, borderColor: colors.border },
@@ -191,166 +146,104 @@ function QuickMeasureForm({
               bounces={false}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.content}>
-              {phase === 'saved' && saved ? (
-                <View style={styles.success}>
-                  <View
-                    style={[
-                      styles.successIcon,
-                      { backgroundColor: `${colors.success}1A` },
-                    ]}>
-                    <SymbolView
-                      name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                      size={22}
-                      tintColor={colors.success}
-                    />
-                  </View>
-
-                  <Text variant="subtitle">
-                    {t('measurements.quick.savedTitle')}
+              <View style={styles.header}>
+                <View style={styles.headerText}>
+                  <Text variant="heading">
+                    {t('measurements.quick.title')}
                   </Text>
                   <Text variant="caption" color="textSecondary">
-                    {t('measurements.quick.savedAt', {
-                      time: formatTime(saved.at, locale),
-                    })}
+                    {t('measurements.quick.today', { date: today })}
                   </Text>
-                  <Text
-                    variant="caption"
-                    color="textTertiary"
-                    style={styles.center}>
-                    {t('measurements.quick.savedSummary', {
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('measurements.quick.close')}
+                  onPress={close}
+                  disabled={busy}
+                  style={[
+                    styles.close,
+                    { backgroundColor: colors.surfaceMuted },
+                  ]}>
+                  <SymbolView
+                    name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                    size={18}
+                    tintColor={colors.textSecondary}
+                  />
+                </Pressable>
+              </View>
+
+              <NumberField
+                label={t('measurements.form.consumption')}
+                value={consumption}
+                onChange={setConsumption}
+                min={minConsumption}
+                unit="kWh"
+                error={consumptionError}
+                actionLabel={
+                  lastReading
+                    ? t('measurements.form.restore')
+                    : undefined
+                }
+              />
+              <NumberField
+                label={t('measurements.form.production')}
+                value={production}
+                onChange={setProduction}
+                min={minProduction}
+                unit="kWh"
+                error={productionError}
+                actionLabel={
+                  lastReading
+                    ? t('measurements.form.restore')
+                    : undefined
+                }
+              />
+
+              <Text variant="caption" color="textTertiary">
+                {lastReading
+                  ? t('measurements.quick.lastReading', {
                       consumption: formatNumber(
-                        saved.measurement.consumption,
+                        lastReading.consumption,
                         locale,
                       ),
                       production: formatNumber(
-                        saved.measurement.production,
+                        lastReading.production,
                         locale,
                       ),
-                      consumptionDelta: `+${formatNumber(
-                        consumedDelta,
-                        locale,
-                      )}`,
-                      productionDelta: `+${formatNumber(
-                        producedDelta,
-                        locale,
-                      )}`,
-                    })}
-                  </Text>
+                    })
+                  : t('measurements.quick.noLastReading')}
+              </Text>
 
-                  <View style={styles.successActions}>
-                    <Button
-                      label={t('measurements.quick.done')}
-                      onPress={onClose}
-                    />
-                    <Button
-                      label={t('measurements.quick.undo')}
-                      variant="ghost"
-                      onPress={() => void undo()}
-                    />
-                  </View>
-                </View>
-              ) : (
-                <>
-                  <View style={styles.header}>
-                    <View style={styles.headerText}>
-                      <Text variant="heading">
-                        {t('measurements.quick.title')}
-                      </Text>
-                      <Text variant="caption" color="textSecondary">
-                        {t('measurements.quick.today', { date: today })}
-                      </Text>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('measurements.quick.close')}
-                      onPress={close}
-                      disabled={busy}
-                      style={[
-                        styles.close,
-                        { backgroundColor: colors.surfaceMuted },
-                      ]}>
-                      <SymbolView
-                        name={{ ios: 'xmark', android: 'close', web: 'close' }}
-                        size={18}
-                        tintColor={colors.textSecondary}
-                      />
-                    </Pressable>
-                  </View>
+              {!valid ? (
+                <Text
+                  variant="caption"
+                  color="danger"
+                  accessibilityLiveRegion="polite">
+                  {t('measurements.quick.invalid')}
+                </Text>
+              ) : null}
 
-                  <NumberField
-                    label={t('measurements.form.consumption')}
-                    value={consumption}
-                    onChange={setConsumption}
-                    min={minConsumption}
-                    unit="kWh"
-                    error={consumptionError}
-                    actionLabel={
-                      lastReading
-                        ? t('measurements.form.restore')
-                        : undefined
-                    }
-                  />
-                  <NumberField
-                    label={t('measurements.form.production')}
-                    value={production}
-                    onChange={setProduction}
-                    min={minProduction}
-                    unit="kWh"
-                    error={productionError}
-                    actionLabel={
-                      lastReading
-                        ? t('measurements.form.restore')
-                        : undefined
-                    }
-                  />
+              {error ? (
+                <Text variant="caption" color="danger">
+                  {error}
+                </Text>
+              ) : null}
 
-                  <Text variant="caption" color="textTertiary">
-                    {lastReading
-                      ? t('measurements.quick.lastReading', {
-                          consumption: formatNumber(
-                            lastReading.consumption,
-                            locale,
-                          ),
-                          production: formatNumber(
-                            lastReading.production,
-                            locale,
-                          ),
-                        })
-                      : t('measurements.quick.noLastReading')}
-                  </Text>
-
-                  {!valid ? (
-                    <Text
-                      variant="caption"
-                      color="danger"
-                      accessibilityLiveRegion="polite">
-                      {t('measurements.quick.invalid')}
-                    </Text>
-                  ) : null}
-
-                  {error ? (
-                    <Text variant="caption" color="danger">
-                      {error}
-                    </Text>
-                  ) : null}
-
-                  <Button
-                    label={
-                      busy
-                        ? t('measurements.quick.saving')
-                        : t('measurements.quick.save')
-                    }
-                    onPress={() => void save()}
-                    disabled={!valid || busy}
-                  />
-                  <Button
-                    label={t('measurements.quick.notNow')}
-                    variant="ghost"
-                    onPress={close}
-                    disabled={busy}
-                  />
-                </>
-              )}
+              <Button
+                label={
+                  busy
+                    ? t('measurements.quick.saving')
+                    : t('measurements.quick.save')
+                }
+                onPress={() => void save()}
+                disabled={!valid || busy}
+              />
+              <Button
+                label={t('measurements.quick.notNow')}
+                variant="ghost"
+                onPress={close}
+                disabled={busy}
+              />
             </ScrollView>
           </Animated.View>
         </KeyboardAvoidingView>
@@ -411,24 +304,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  success: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingTop: spacing.sm,
-  },
-  successIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xs,
-  },
-  center: { textAlign: 'center' },
-  successActions: {
-    alignSelf: 'stretch',
-    gap: spacing.sm,
-    marginTop: spacing.md,
   },
 });
