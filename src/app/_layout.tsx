@@ -49,6 +49,7 @@ const HIDDEN_NAV_ROUTES = new Set([
   '/agent-settings',
   '/backup-settings',
   '/sync',
+  '/dev-quick-measure',
 ]);
 
 export default function RootLayout() {

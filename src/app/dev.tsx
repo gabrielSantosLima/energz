@@ -71,6 +71,10 @@ export default function DevScreen() {
       <Text variant="title">{t('dev.title')}</Text>
 
       <View style={styles.actions}>
+        <Button
+          label={t('dev.quickMeasure.open')}
+          onPress={() => navigate('/dev-quick-measure')}
+        />
         <Button label={t('dev.scan')} onPress={() => navigate('/bill-scan')} />
         <Button
           label={t('dev.parse')}
