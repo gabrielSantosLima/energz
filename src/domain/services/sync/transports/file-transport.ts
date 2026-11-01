@@ -7,7 +7,6 @@ import {
   SYNC_MAX_BYTES,
 } from '@/domain/entities/sync';
 import {
-  SyncFileError,
   SyncFileTooLargeError,
   SyncSharingUnavailableError,
 } from '@/domain/errors/sync-errors';
@@ -89,13 +88,15 @@ export class FileTransport implements SyncTransport {
     }
 
     const file = picked.result;
-    const name = file.name;
 
-    if (!hasSyncExtension(name)) {
-      throw new SyncFileError(
-        `Select a .${SYNC_FILE_EXTENSION} sync file.`,
-      );
-    }
+    // Android pickers return a `content://` URI, so `file.name` is the document
+    // id (for example `msf:1000000123`) instead of the display name. The
+    // content is validated when the envelope is parsed, so the name is only
+    // used for display here.
+    const name = file.name;
+    const fileName = hasSyncExtension(name)
+      ? name
+      : `energz-import-${Date.now()}.energz`;
 
     if (file.size > SYNC_MAX_BYTES) {
       throw new SyncFileTooLargeError();
@@ -107,6 +108,6 @@ export class FileTransport implements SyncTransport {
       throw new SyncFileTooLargeError();
     }
 
-    return { content, fileName: name };
+    return { content, fileName };
   }
 }
