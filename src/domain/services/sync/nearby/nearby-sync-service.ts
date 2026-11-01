@@ -18,6 +18,7 @@ import { SYNC_MAX_BYTES } from '@/domain/entities/sync';
 import {
   NearbyError,
   NearbyUnavailableError,
+  toNearbyError,
 } from '@/domain/errors/nearby-errors';
 import { IdGenerator } from '@/domain/services/id-generator';
 import { NearbyPermissions } from '@/domain/services/sync/nearby/nearby-permissions';
@@ -175,6 +176,8 @@ class NearbySenderSessionImpl
   private sending = false;
   private finished = false;
   private connected = false;
+  private advertising = true;
+  private resuming = false;
   private ackWaiters = new Map<number, AckWaiter>();
   private completeWaiter: {
     resolve: () => void;
@@ -195,7 +198,7 @@ class NearbySenderSessionImpl
         this.nearby.Strategy.P2P_POINT_TO_POINT,
       );
     } catch (cause) {
-      throw new NearbyError('connection', errorMessage(cause));
+      throw toNearbyError(cause);
     }
 
     this.unsubscribers.push(
@@ -223,7 +226,19 @@ class NearbySenderSessionImpl
         if (this.peer?.id !== peerId || this.finished || this.canceled) {
           return;
         }
-        this.fail('connection', 'The other device disconnected.');
+
+        // Losing the peer before any data was sent is not a failure: go back
+        // to waiting so another device can connect without restarting.
+        if (!this.connected && !this.sending) {
+          this.peer = null;
+          if (!this.advertising) {
+            void this.resumeAdvertising();
+          }
+          this.config.handlers.onWaiting();
+          return;
+        }
+
+        this.fail('peerLost', 'The other device disconnected.');
       }),
       this.nearby.onTextReceived(({ peerId, text }) => {
         if (this.peer?.id !== peerId) {
@@ -247,13 +262,18 @@ class NearbySenderSessionImpl
     try {
       await this.nearby.acceptConnection(peer.id);
       await this.nearby.stopAdvertise().catch(() => undefined);
+      this.advertising = false;
       this.addTimer(() => {
-        if (!this.connected && !this.finished && !this.canceled) {
-          this.fail('timeout', 'Connection timed out.');
+        // The peer may have gone back to "waiting" after a drop, in which case
+        // this connection attempt is already over.
+        if (this.peer?.id !== peer.id || this.connected || this.finished) {
+          return;
         }
+        this.fail('timeout', 'Connection timed out.');
       }, NEARBY_CONNECT_TIMEOUT_MS);
     } catch (cause) {
-      this.fail('connection', errorMessage(cause));
+      const error = toNearbyError(cause);
+      this.fail(error.code, error.message);
     }
   }
 
@@ -290,12 +310,43 @@ class NearbySenderSessionImpl
     await this.cleanup();
   }
 
-  private splitChunks(): string[] {
-    const characters = Array.from(this.config.content);
-    const chunks: string[] = [];
+  private async resumeAdvertising(): Promise<void> {
+    if (this.advertising || this.canceled || this.resuming) {
+      return;
+    }
 
-    for (let index = 0; index < characters.length; index += NEARBY_CHUNK_SIZE) {
-      chunks.push(characters.slice(index, index + NEARBY_CHUNK_SIZE).join(''));
+    this.resuming = true;
+
+    try {
+      await this.nearby.startAdvertise(
+        this.config.deviceName,
+        this.nearby.Strategy.P2P_POINT_TO_POINT,
+      );
+      this.advertising = true;
+    } catch (cause) {
+      const error = toNearbyError(cause);
+      this.fail(error.code, error.message);
+    } finally {
+      this.resuming = false;
+    }
+  }
+
+  private splitChunks(): string[] {
+    const content = this.config.content;
+    const chunks: string[] = [];
+    let index = 0;
+
+    while (index < content.length) {
+      let end = Math.min(index + NEARBY_CHUNK_SIZE, content.length);
+      const codeUnit = content.charCodeAt(end - 1);
+
+      // Do not cut a surrogate pair in half.
+      if (end < content.length && codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+        end -= 1;
+      }
+
+      chunks.push(content.slice(index, end));
+      index = end;
     }
 
     return chunks.length > 0 ? chunks : [''];
@@ -515,6 +566,7 @@ class NearbyReceiverSessionImpl
   private total = 0;
   private ended = false;
   private finalized = false;
+  private restarting = false;
   private idleTimer: Timer | null = null;
 
   constructor(
@@ -531,7 +583,7 @@ class NearbyReceiverSessionImpl
         this.nearby.Strategy.P2P_POINT_TO_POINT,
       );
     } catch (cause) {
-      throw new NearbyError('connection', errorMessage(cause));
+      throw toNearbyError(cause);
     }
 
     this.unsubscribers.push(
@@ -547,8 +599,15 @@ class NearbyReceiverSessionImpl
         if (this.canceled) {
           return;
         }
+
         this.peers.delete(peerId);
         this.config.handlers.onPeerLost(peerId);
+
+        // If the peer we were about to connect disappears, silently go back to
+        // discovery instead of waiting for the connect timeout.
+        if (!this.connected && this.peer?.id === peerId) {
+          void this.resumeDiscovery();
+        }
       }),
       this.nearby.onConnected(({ peerId }) => {
         if (!this.peer || peerId !== this.peer.id || this.canceled) {
@@ -562,7 +621,14 @@ class NearbyReceiverSessionImpl
         if (!this.connected || this.peer?.id !== peerId || this.finalized) {
           return;
         }
-        this.fail('connection', 'The other device disconnected.');
+
+        // Dropping the connection before any data arrived is recoverable.
+        if (this.received === 0 && !this.ended) {
+          void this.resumeDiscovery();
+          return;
+        }
+
+        this.fail('peerLost', 'The other device disconnected.');
       }),
       this.nearby.onTextReceived(({ peerId, text }) => {
         if (this.peer?.id !== peerId) {
@@ -589,12 +655,13 @@ class NearbyReceiverSessionImpl
       await this.nearby.stopDiscovery().catch(() => undefined);
       await this.nearby.requestConnection(peerId);
       this.addTimer(() => {
-        if (!this.connected) {
+        if (!this.connected && this.peer?.id === peer.id) {
           this.fail('timeout', 'Connection timed out.');
         }
       }, NEARBY_CONNECT_TIMEOUT_MS);
     } catch (cause) {
-      this.fail('connection', errorMessage(cause));
+      const error = toNearbyError(cause);
+      this.fail(error.code, error.message);
     }
   }
 
@@ -615,6 +682,48 @@ class NearbyReceiverSessionImpl
     }
 
     await this.cleanup();
+  }
+
+  /**
+   * Recoverable drop: forget the current peer and start discovering again so
+   * the user can retry without leaving the screen.
+   */
+  private async resumeDiscovery(): Promise<void> {
+    if (this.canceled || this.finalized || this.restarting) {
+      return;
+    }
+
+    this.restarting = true;
+
+    this.connected = false;
+    this.connecting = false;
+    this.peer = null;
+    this.sessionId = null;
+    this.ended = false;
+    this.received = 0;
+    this.total = 0;
+    this.chunks = [];
+    this.peers.clear();
+    this.idleTimer = null;
+    this.clearTimers();
+
+    try {
+      await this.nearby.disconnect().catch(() => undefined);
+      await this.nearby.stopDiscovery().catch(() => undefined);
+      await this.nearby.startDiscovery(
+        this.config.deviceName,
+        this.nearby.Strategy.P2P_POINT_TO_POINT,
+      );
+
+      if (!this.canceled) {
+        this.config.handlers.onDiscovering();
+      }
+    } catch (cause) {
+      const error = toNearbyError(cause);
+      this.fail(error.code, error.message);
+    } finally {
+      this.restarting = false;
+    }
   }
 
   private resetIdleTimer(): void {
@@ -661,6 +770,15 @@ class NearbyReceiverSessionImpl
 
     if (frame.type === 'chunk') {
       if (!this.sessionId || frame.sessionId !== this.sessionId) {
+        return;
+      }
+
+      // Guard against a peer sending a single oversized chunk.
+      if (
+        typeof frame.data !== 'string' ||
+        frame.data.length > NEARBY_CHUNK_SIZE * 2
+      ) {
+        this.fail('invalid', 'The incoming chunk is larger than allowed.');
         return;
       }
 
@@ -795,10 +913,7 @@ export class NearbySyncService {
       return session;
     } catch (cause) {
       await session.cancel();
-      if (cause instanceof NearbyError) {
-        throw cause;
-      }
-      throw new NearbyError('connection', errorMessage(cause));
+      throw toNearbyError(cause);
     }
   }
 
@@ -815,10 +930,7 @@ export class NearbySyncService {
       return session;
     } catch (cause) {
       await session.cancel();
-      if (cause instanceof NearbyError) {
-        throw cause;
-      }
-      throw new NearbyError('connection', errorMessage(cause));
+      throw toNearbyError(cause);
     }
   }
 }

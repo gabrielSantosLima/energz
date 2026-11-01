@@ -1,5 +1,6 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import type {
   NearbyErrorCode,
@@ -37,6 +38,7 @@ export function useNearbySend() {
   const sessionRef = useRef<NearbySenderSession | null>(null);
   const attemptRef = useRef(0);
   const mountedRef = useRef(true);
+  const interruptibleRef = useRef(false);
 
   const describeError = useCallback(
     (cause: unknown): { code: NearbyErrorCode; message: string } => {
@@ -182,14 +184,43 @@ export function useNearbySend() {
     status === 'connecting' ||
     status === 'sending';
 
+  // Permission dialogs also background the activity on Android, so the
+  // "starting" phase must not abort the session.
+  const interruptible = active && status !== 'starting';
+
+  useEffect(() => {
+    interruptibleRef.current = interruptible;
+  }, [interruptible]);
+
+  // Nearby Connections cannot keep running reliably while the app is in the
+  // background, so stop with a clear message instead of corrupting the session.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next !== 'background' || !interruptibleRef.current) {
+        return;
+      }
+
+      attemptRef.current += 1;
+      void sessionRef.current?.cancel();
+      sessionRef.current = null;
+      setPeer(null);
+      setProgress(0);
+      setStatus('error');
+      setErrorCode('background');
+      setError(t('sync.nearby.errors.background'));
+    });
+
+    return () => subscription.remove();
+  }, [t]);
+
   useEffect(() => {
     if (!active) {
       return;
     }
 
-    void activateKeepAwakeAsync(KEEP_AWAKE_TAG);
+    void activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => undefined);
     return () => {
-      void deactivateKeepAwake(KEEP_AWAKE_TAG);
+      void deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => undefined);
     };
   }, [active]);
 

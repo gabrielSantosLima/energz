@@ -280,7 +280,10 @@ export const pt = {
     nearby: {
       send: 'Enviar por perto',
       find: 'Buscar aparelhos por perto',
-      hint: 'Mantenha os dois aparelhos nesta tela, próximos e com o Bluetooth ligado.',
+      hint: 'Mantenha os dois aparelhos nesta tela, próximos e com o Bluetooth ligado, e deixe o app aberto.',
+      keepOpen: 'Mantenha o app aberto até o fim da transferência.',
+      openSettings: 'Abrir ajustes',
+      openBluetooth: 'Ligar Bluetooth',
       waiting: 'Aguardando um aparelho se conectar...',
       invitation: '{{name}} quer receber seus dados.',
       invitationHint: 'Continue apenas se você reconhece este aparelho.',
@@ -298,10 +301,16 @@ export const pt = {
       tryAgain: 'Tentar novamente',
       errors: {
         permission:
-          'Permita Bluetooth e dispositivos por perto para usar a sincronização por proximidade.',
+          'Permita Bluetooth, dispositivos por perto e localização para usar a sincronização por proximidade.',
+        permissionBlocked:
+          'As permissões de Bluetooth, dispositivos por perto e localização estão bloqueadas. Libere nos ajustes do app.',
+        bluetooth: 'O Bluetooth está desligado. Ligue e tente novamente.',
         unavailable:
           'O compartilhamento por proximidade não está disponível neste aparelho.',
         connection: 'Não foi possível conectar ao outro aparelho.',
+        peerLost: 'O outro aparelho saiu de alcance. Tente novamente.',
+        background:
+          'Transferência interrompida: o app foi para segundo plano. Mantenha-o aberto e tente novamente.',
         transfer: 'A transferência falhou. Tente novamente.',
         timeout: 'A conexão expirou. Tente novamente.',
         tooLarge: 'Dados demais para enviar por proximidade. Use um arquivo.',

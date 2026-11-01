@@ -280,7 +280,10 @@ export const en = {
     nearby: {
       send: 'Send nearby',
       find: 'Find nearby devices',
-      hint: 'Keep both devices on this screen, close together, with Bluetooth on.',
+      hint: 'Keep both devices on this screen, close together, with Bluetooth on, and keep the app open.',
+      keepOpen: 'Keep the app open until the transfer finishes.',
+      openSettings: 'Open settings',
+      openBluetooth: 'Turn on Bluetooth',
       waiting: 'Waiting for a device to connect...',
       invitation: '{{name}} wants to receive your data.',
       invitationHint: 'Only continue if you recognize this device.',
@@ -298,9 +301,15 @@ export const en = {
       tryAgain: 'Try again',
       errors: {
         permission:
-          'Allow Bluetooth and nearby devices to use proximity sync.',
+          'Allow Bluetooth, nearby devices and location to use proximity sync.',
+        permissionBlocked:
+          'Bluetooth, nearby devices and location permissions are blocked. Allow them in the app settings.',
+        bluetooth: 'Bluetooth is off. Turn it on and try again.',
         unavailable: 'Nearby sharing is not available on this device.',
         connection: 'Could not connect to the other device.',
+        peerLost: 'The other device went out of reach. Try again.',
+        background:
+          'Transfer interrupted: the app went to the background. Keep it open and try again.',
         transfer: 'The transfer failed. Try again.',
         timeout: 'The connection timed out. Try again.',
         tooLarge: 'Too much data to send by proximity. Use a file instead.',

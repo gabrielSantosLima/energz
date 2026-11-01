@@ -13,8 +13,12 @@ export type NearbyPeer = {
 
 export const NEARBY_ERROR_CODES = [
   'permission',
+  'permissionBlocked',
+  'bluetooth',
   'unavailable',
   'connection',
+  'peerLost',
+  'background',
   'transfer',
   'timeout',
   'tooLarge',

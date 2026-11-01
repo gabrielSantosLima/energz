@@ -15,6 +15,10 @@ import type { SyncEnvelope } from '@/domain/entities/sync';
 import { useNearbyReceive } from '@/hooks/use-nearby-receive';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import {
+  openAppSettings,
+  openBluetoothSettings,
+} from '@/lib/app-settings';
 import { radius, spacing } from '@/theme';
 
 type Props = {
@@ -84,6 +88,19 @@ export function NearbyReceivePanel({
     return () => onActiveChange?.(false);
   }, [onActiveChange]);
 
+  const settingsAction =
+    nearby.errorCode === 'permissionBlocked'
+      ? {
+          label: t('sync.nearby.openSettings'),
+          onPress: () => void openAppSettings(),
+        }
+      : nearby.errorCode === 'bluetooth'
+        ? {
+            label: t('sync.nearby.openBluetooth'),
+            onPress: () => void openBluetoothSettings(),
+          }
+        : null;
+
   if (nearby.status === 'idle') {
     return (
       <View style={styles.wrapper}>
@@ -111,7 +128,11 @@ export function NearbyReceivePanel({
           ]}>
           <View style={styles.searching}>
             <ActivityIndicator color={colors.primary} />
-            <Text variant="subtitle">{t('sync.nearby.searching')}</Text>
+            <Text
+              variant="subtitle"
+              accessibilityLiveRegion="polite">
+              {t('sync.nearby.searching')}
+            </Text>
           </View>
 
           {nearby.peers.length > 0 ? (
@@ -152,7 +173,9 @@ export function NearbyReceivePanel({
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}>
           <ActivityIndicator color={colors.primary} />
-          <Text variant="subtitle">
+          <Text
+            variant="subtitle"
+            accessibilityLiveRegion="polite">
             {t('sync.nearby.connecting', {
               name: nearby.selectedPeer.name || nearby.selectedPeer.id,
             })}
@@ -179,6 +202,9 @@ export function NearbyReceivePanel({
             label={t('sync.nearby.receiving')}
             progress={nearby.progress}
           />
+          <Text variant="caption" color="textTertiary" style={styles.hint}>
+            {t('sync.nearby.keepOpen')}
+          </Text>
         </View>
         <Button
           label={t('sync.cancel')}
@@ -196,10 +222,20 @@ export function NearbyReceivePanel({
           styles.card,
           { backgroundColor: colors.surface, borderColor: colors.danger },
         ]}>
-        <Text variant="caption" color="danger">
+        <Text
+          variant="caption"
+          color="danger"
+          accessibilityLiveRegion="polite">
           {nearby.error ?? t('sync.nearby.errors.transfer')}
         </Text>
       </View>
+      {settingsAction ? (
+        <Button
+          label={settingsAction.label}
+          variant="secondary"
+          onPress={settingsAction.onPress}
+        />
+      ) : null}
       <Button
         label={t('sync.nearby.tryAgain')}
         onPress={() => void nearby.start(deviceName)}
