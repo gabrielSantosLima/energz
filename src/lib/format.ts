@@ -33,6 +33,13 @@ export function formatNumber(
   }).format(value);
 }
 
+export function formatTime(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(intlLocale[locale], {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export function formatEnergy(value: number, locale: Locale): string {
   return `${formatNumber(value, locale)} kWh`;
 }

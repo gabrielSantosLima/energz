@@ -1,5 +1,5 @@
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
 import { useTheme } from '@/hooks/use-theme';
@@ -20,6 +20,7 @@ type Props = {
   production: EnergyMetric;
   consumption: EnergyMetric;
   balance: number;
+  onQuickAdd?: () => void;
 };
 
 const ARROW_UP: SymbolViewProps['name'] = {
@@ -121,6 +122,7 @@ export function EnergyOverviewCard({
   consumption,
   production,
   balance,
+  onQuickAdd,
 }: Props) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
@@ -151,6 +153,48 @@ export function EnergyOverviewCard({
           {formatEnergy(balance, locale)}
         </Text>
       </View>
+
+      {onQuickAdd ? (
+        <>
+          <View style={[styles.actionDivider, { backgroundColor: colors.border }]} />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('measurements.quick.add')}
+            onPress={onQuickAdd}
+            style={({ pressed }) => [
+              styles.action,
+              { opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: colors.primarySoft },
+              ]}>
+              <SymbolView
+                name={{ ios: 'plus', android: 'add', web: 'add' }}
+                size={18}
+                tintColor={colors.primary}
+              />
+            </View>
+            <View style={styles.actionText}>
+              <Text variant="bodyStrong">{t('measurements.quick.add')}</Text>
+              <Text variant="caption" color="textTertiary">
+                {t('measurements.quick.addHint')}
+              </Text>
+            </View>
+            <SymbolView
+              name={{
+                ios: 'chevron.right',
+                android: 'chevron_right',
+                web: 'chevron_right',
+              }}
+              size={16}
+              tintColor={colors.textTertiary}
+            />
+          </Pressable>
+        </>
+      ) : null}
     </View>
   );
 }
@@ -205,4 +249,23 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.lg,
   },
+  actionDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: spacing.lg,
+  },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: 44,
+    paddingTop: spacing.md,
+  },
+  actionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionText: { flex: 1, gap: 2 },
 });

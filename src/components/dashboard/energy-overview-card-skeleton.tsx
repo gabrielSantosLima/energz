@@ -34,6 +34,13 @@ export function EnergyOverviewCardSkeleton() {
         <Skeleton width={70} height={12} />
         <Skeleton width={64} height={16} />
       </View>
+      <View
+        style={[styles.actionDivider, { backgroundColor: colors.border }]}
+      />
+      <View style={styles.action}>
+        <Skeleton width={32} height={32} round={radius.sm} />
+        <Skeleton width={150} height={14} />
+      </View>
     </View>
   );
 }
@@ -61,5 +68,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: spacing.lg,
+  },
+  actionDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: spacing.lg,
+  },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingTop: spacing.md,
   },
 });

@@ -9,6 +9,10 @@ import { BillHistoryCard } from '@/components/dashboard/bill-history-card';
 import { CycleChart } from '@/components/dashboard/cycle-chart';
 import { EnergyOverviewCard } from '@/components/dashboard/energy-overview-card';
 import { EnergyOverviewCardSkeleton } from '@/components/dashboard/energy-overview-card-skeleton';
+import {
+  QuickMeasureSheet,
+  type QuickMeasurementInput,
+} from '@/components/measurements/quick-measure-sheet';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
@@ -18,12 +22,14 @@ import { useAgentSetup } from '@/hooks/use-agent-setup';
 import { useCycles } from '@/hooks/use-cycles';
 import { useDevMode } from '@/hooks/use-dev-mode';
 import { useEnergyBills } from '@/hooks/use-energy-bills';
-import { useMeasurements } from '@/hooks/use-measurements';
+import {
+  useMeasurementActions,
+  useMeasurements,
+} from '@/hooks/use-measurements';
 import { useSafeNavigation } from '@/hooks/use-safe-navigation';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
-
 type FeatureTag = 'ai' | 'new';
 
 type Feature = {
@@ -43,6 +49,8 @@ export default function DashboardScreen() {
   const requireAgentSetup = useAgentSetup();
   const navigate = useSafeNavigation();
   const { devMode, enableDevMode } = useDevMode();
+  const { createMeasurement, deleteMeasurement } = useMeasurementActions();
+  const [quickOpen, setQuickOpen] = useState(false);
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
@@ -73,6 +81,33 @@ export default function DashboardScreen() {
     void refreshMeasurements();
     void refreshBills();
   }, [refreshCycles, refreshMeasurements, refreshBills]);
+
+  const lastReading =
+    measurements.length > 0 ? measurements[measurements.length - 1] : null;
+
+  const handleQuickSubmit = useCallback(
+    async (input: QuickMeasurementInput) => {
+      const created = await createMeasurement({
+        measuredAt: input.measuredAt,
+        consumption: input.consumption,
+        production: input.production,
+        endsCycle: false,
+        restart: false,
+      });
+
+      refresh();
+      return created;
+    },
+    [createMeasurement, refresh],
+  );
+
+  const handleQuickUndo = useCallback(
+    async (id: string) => {
+      await deleteMeasurement(id);
+      await refresh();
+    },
+    [deleteMeasurement, refresh],
+  );
 
   const currentCycle =
     cycles.find((cycle) => !cycle.closed) ?? cycles[cycles.length - 1] ?? null;
@@ -228,6 +263,7 @@ export default function DashboardScreen() {
               accent: colors.accent,
               higherIsBetter: true,
             }}
+            onQuickAdd={() => setQuickOpen(true)}
           />
         </View>
       )}
@@ -344,6 +380,14 @@ export default function DashboardScreen() {
         key={selected?.id ?? 'none'}
         cycle={selected}
         measurements={measurements}
+      />
+
+      <QuickMeasureSheet
+        visible={quickOpen}
+        lastReading={lastReading}
+        onClose={() => setQuickOpen(false)}
+        onSubmit={handleQuickSubmit}
+        onUndo={handleQuickUndo}
       />
     </Screen>
   );
