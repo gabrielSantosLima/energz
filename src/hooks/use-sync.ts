@@ -107,6 +107,28 @@ export function useSync() {
     }
   }, [describeError, deviceName, exportFile, saveDeviceName]);
 
+  const openPreview = useCallback(
+    async (nextEnvelope: SyncEnvelope, fileName: string) => {
+      setError(null);
+      setResult(null);
+      setPreview(null);
+      setEnvelope(null);
+      setSourceFileName(null);
+
+      try {
+        const nextPreview = await previewImport.execute(nextEnvelope);
+        setEnvelope(nextEnvelope);
+        setPreview(nextPreview);
+        setSourceFileName(fileName);
+        return nextPreview;
+      } catch (cause) {
+        setError(describeError(cause));
+        return null;
+      }
+    },
+    [describeError, previewImport],
+  );
+
   const pickFile = useCallback(async (): Promise<void> => {
     setError(null);
     setResult(null);
@@ -121,16 +143,13 @@ export function useSync() {
         return;
       }
 
-      const nextPreview = await previewImport.execute(imported.envelope);
-      setEnvelope(imported.envelope);
-      setPreview(nextPreview);
-      setSourceFileName(imported.fileName);
+      await openPreview(imported.envelope, imported.fileName);
     } catch (cause) {
       setError(describeError(cause));
     } finally {
       setImporting(false);
     }
-  }, [describeError, importFile, previewImport]);
+  }, [describeError, importFile, openPreview]);
 
   const apply = useCallback(async (): Promise<SyncResult | null> => {
     if (!envelope) {
@@ -180,6 +199,7 @@ export function useSync() {
     error,
     exportData,
     pickFile,
+    openPreview,
     apply,
     cancelPreview,
     reset,

@@ -44,7 +44,15 @@
       "expo-sharing",
       "expo-notifications",
       "expo-camera",
-      "expo-background-task"
+      "expo-background-task",
+      [
+        "expo-nearby-connections",
+        {
+          "bonjourServicesName": "energz-sync",
+          "localNetworkUsagePermissionText": "energz uses the local network to find a nearby device and sync your data.",
+          "bluetoothUsagePermissionText": "energz uses Bluetooth to find a nearby device and sync your data."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

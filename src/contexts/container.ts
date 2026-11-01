@@ -17,6 +17,8 @@ import { NotificationSettingsStorage } from '@/domain/services/notification-sett
 import { PreferencesStorage } from '@/domain/services/preferences-storage';
 import { ReportExporter } from '@/domain/services/report-exporter';
 import { DeviceIdentity } from '@/domain/services/sync/device-identity';
+import { NearbyPermissions } from '@/domain/services/sync/nearby/nearby-permissions';
+import { NearbySyncService } from '@/domain/services/sync/nearby/nearby-sync-service';
 import { SyncRepository } from '@/domain/services/sync/sync-repository';
 import { SyncSerializer } from '@/domain/services/sync/sync-serializer';
 import {
@@ -61,6 +63,8 @@ import { ExportSyncFileUseCase } from '@/domain/useCases/sync/export-sync-file';
 import { GetSyncDeviceNameUseCase } from '@/domain/useCases/sync/get-sync-device-name';
 import { ImportSyncFileUseCase } from '@/domain/useCases/sync/import-sync-file';
 import { PreviewSyncUseCase } from '@/domain/useCases/sync/preview-sync';
+import { RunNearbyReceiveUseCase } from '@/domain/useCases/sync/run-nearby-receive';
+import { RunNearbySendUseCase } from '@/domain/useCases/sync/run-nearby-send';
 import { SetSyncDeviceNameUseCase } from '@/domain/useCases/sync/set-sync-device-name';
 
 container.registerSingleton(Database);
@@ -79,6 +83,8 @@ container.registerSingleton(ReportExporter);
 container.registerSingleton(ImageCapturer);
 
 container.registerSingleton(DeviceIdentity);
+container.registerSingleton(NearbyPermissions);
+container.registerSingleton(NearbySyncService);
 container.registerSingleton(SyncRepository);
 container.registerSingleton(SyncSerializer);
 container.register<SyncTransport>(SYNC_TRANSPORT, { useClass: FileTransport });
@@ -90,6 +96,8 @@ container.registerSingleton(ExportSyncFileUseCase);
 container.registerSingleton(ImportSyncFileUseCase);
 container.registerSingleton(PreviewSyncUseCase);
 container.registerSingleton(ApplySyncUseCase);
+container.registerSingleton(RunNearbySendUseCase);
+container.registerSingleton(RunNearbyReceiveUseCase);
 
 container.registerSingleton(GetPreferencesUseCase);
 container.registerSingleton(SetLocaleUseCase);

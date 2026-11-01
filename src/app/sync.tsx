@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  BackHandler,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,17 +12,22 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { NearbyReceivePanel } from '@/components/sync/nearby-receive-panel';
+import { NearbySendPanel } from '@/components/sync/nearby-send-panel';
 import { SyncModeCard } from '@/components/sync/sync-mode-card';
 import { Button } from '@/components/ui/button';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Text } from '@/components/ui/text';
 import { TextInput } from '@/components/ui/text-input';
 import { useToast } from '@/contexts/toast';
+import type { SyncEnvelope } from '@/domain/entities/sync';
 import { useSync } from '@/hooks/use-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { radius, spacing } from '@/theme';
 
 type Mode = 'send' | 'receive';
+type Method = 'nearby' | 'file';
 
 function CountStat({
   label,
@@ -54,6 +61,52 @@ export default function SyncScreen() {
   const toast = useToast();
   const sync = useSync();
   const [mode, setMode] = useState<Mode | null>(null);
+  const [method, setMethod] = useState<Method>('nearby');
+  const [transferActive, setTransferActive] = useState(false);
+  const { openPreview } = sync;
+
+  const confirmLeave = useCallback(() => {
+    Alert.alert(t('sync.leaveTitle'), t('sync.leaveMessage'), [
+      { text: t('sync.leaveStay'), style: 'cancel' },
+      {
+        text: t('sync.leave'),
+        style: 'destructive',
+        onPress: () => router.back(),
+      },
+    ]);
+  }, [t]);
+
+  const goBack = useCallback(() => {
+    if (transferActive) {
+      confirmLeave();
+      return;
+    }
+
+    router.back();
+  }, [confirmLeave, transferActive]);
+
+  useEffect(() => {
+    if (!transferActive) {
+      return;
+    }
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        confirmLeave();
+        return true;
+      },
+    );
+
+    return () => subscription.remove();
+  }, [confirmLeave, transferActive]);
+
+  const handleNearbyReceived = useCallback(
+    (envelope: SyncEnvelope, fileName: string) => {
+      void openPreview(envelope, fileName);
+    },
+    [openPreview],
+  );
 
   const padding = {
     paddingTop: insets.top + spacing.lg,
@@ -63,11 +116,13 @@ export default function SyncScreen() {
 
   const chooseMode = (next: Mode) => {
     sync.reset();
+    setMethod('nearby');
     setMode(next);
   };
 
   const changeMode = () => {
     sync.reset();
+    setMethod('nearby');
     setMode(null);
   };
 
@@ -96,7 +151,7 @@ export default function SyncScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
-          onPress={() => router.back()}
+          onPress={goBack}
           style={[styles.back, { backgroundColor: colors.surfaceMuted }]}>
           <SymbolView
             name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }}
@@ -296,25 +351,50 @@ export default function SyncScreen() {
             </Text>
           </View>
 
-          <Button
-            label={sync.exporting ? t('sync.sending') : t('sync.share')}
-            onPress={onExport}
-            disabled={sync.exporting}
-          />
+          {transferActive ? null : (
+            <SegmentedControl
+              value={method}
+              onChange={setMethod}
+              options={[
+                { value: 'nearby', label: t('sync.method.nearby') },
+                { value: 'file', label: t('sync.method.file') },
+              ]}
+            />
+          )}
 
-          {sync.exporting ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : null}
+          {method === 'nearby' ? (
+            <NearbySendPanel
+              deviceName={sync.deviceName}
+              onActiveChange={setTransferActive}
+            />
+          ) : (
+            <>
+              <Button
+                label={
+                  sync.exporting ? t('sync.sending') : t('sync.share')
+                }
+                onPress={onExport}
+                disabled={sync.exporting}
+              />
 
-          <Text variant="caption" color="textTertiary" style={styles.hint}>
-            {t('sync.shareHint')}
-          </Text>
+              {sync.exporting ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : null}
+
+              <Text
+                variant="caption"
+                color="textTertiary"
+                style={styles.hint}>
+                {t('sync.shareHint')}
+              </Text>
+            </>
+          )}
 
           <Button
             label={t('sync.changeMode')}
             variant="ghost"
             onPress={changeMode}
-            disabled={sync.exporting}
+            disabled={sync.exporting || transferActive}
           />
         </>
       ) : (
@@ -329,25 +409,51 @@ export default function SyncScreen() {
             </Text>
           </View>
 
-          <Button
-            label={sync.importing ? t('sync.picking') : t('sync.chooseFile')}
-            onPress={() => void sync.pickFile()}
-            disabled={sync.importing}
-          />
+          {transferActive ? null : (
+            <SegmentedControl
+              value={method}
+              onChange={setMethod}
+              options={[
+                { value: 'nearby', label: t('sync.method.nearby') },
+                { value: 'file', label: t('sync.method.file') },
+              ]}
+            />
+          )}
 
-          {sync.importing ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : null}
+          {method === 'nearby' ? (
+            <NearbyReceivePanel
+              deviceName={sync.deviceName}
+              onReceived={handleNearbyReceived}
+              onActiveChange={setTransferActive}
+            />
+          ) : (
+            <>
+              <Button
+                label={
+                  sync.importing ? t('sync.picking') : t('sync.chooseFile')
+                }
+                onPress={() => void sync.pickFile()}
+                disabled={sync.importing}
+              />
 
-          <Text variant="caption" color="textTertiary" style={styles.hint}>
-            {t('sync.chooseHint')}
-          </Text>
+              {sync.importing ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : null}
+
+              <Text
+                variant="caption"
+                color="textTertiary"
+                style={styles.hint}>
+                {t('sync.chooseHint')}
+              </Text>
+            </>
+          )}
 
           <Button
             label={t('sync.changeMode')}
             variant="ghost"
             onPress={changeMode}
-            disabled={sync.importing}
+            disabled={sync.importing || transferActive}
           />
         </>
       )}
