@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -34,25 +34,29 @@ type Props = {
   onUndo: (id: string) => Promise<void>;
 };
 
+type FormProps = Omit<Props, 'visible'>;
+
 type Phase = 'idle' | 'saving' | 'saved';
 
-export function QuickMeasureSheet({
-  visible,
+export function QuickMeasureSheet({ visible, ...formProps }: Props) {
+  // Mounting only while visible gives every open a fresh form with the values
+  // prefilled, and keeps the dial inputs from starting at zero.
+  return visible ? <QuickMeasureForm {...formProps} /> : null;
+}
+
+function QuickMeasureForm({
   lastReading,
   onClose,
   onSubmit,
   onUndo,
-}: Props) {
+}: FormProps) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
 
-  const lastReadingRef = useRef(lastReading);
-  useEffect(() => {
-    lastReadingRef.current = lastReading;
-  }, [lastReading]);
-
-  const [consumption, setConsumption] = useState(0);
-  const [production, setProduction] = useState(0);
+  const [consumption, setConsumption] = useState(
+    lastReading?.consumption ?? 0,
+  );
+  const [production, setProduction] = useState(lastReading?.production ?? 0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [saved, setSaved] = useState<{
     measurement: Measurement;
@@ -61,19 +65,6 @@ export function QuickMeasureSheet({
     previousProduction: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Reset the form every time the sheet is opened.
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
-    setConsumption(lastReadingRef.current?.consumption ?? 0);
-    setProduction(lastReadingRef.current?.production ?? 0);
-    setPhase('idle');
-    setSaved(null);
-    setError(null);
-  }, [visible]);
 
   const minConsumption = lastReading?.consumption ?? 0;
   const minProduction = lastReading?.production ?? 0;
@@ -91,7 +82,12 @@ export function QuickMeasureSheet({
         ? t('measurements.form.belowPrevious')
         : undefined;
 
-  const valid = !consumptionError && !productionError;
+  const unchanged =
+    lastReading !== null &&
+    consumption === lastReading.consumption &&
+    production === lastReading.production;
+
+  const valid = !consumptionError && !productionError && !unchanged;
   const busy = phase === 'saving';
 
   const close = () => {
@@ -163,7 +159,7 @@ export function QuickMeasureSheet({
 
   return (
     <Modal
-      visible={visible}
+      visible
       transparent
       animationType="none"
       statusBarTranslucent
@@ -175,7 +171,10 @@ export function QuickMeasureSheet({
           style={styles.modal}
           behavior="padding"
           keyboardVerticalOffset={0}>
-          <Animated.View entering={FadeIn.duration(180)} style={styles.backdrop} />
+          <Animated.View
+            entering={FadeIn.duration(180)}
+            style={styles.backdrop}
+          />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('measurements.quick.close')}
@@ -224,10 +223,22 @@ export function QuickMeasureSheet({
                     color="textTertiary"
                     style={styles.center}>
                     {t('measurements.quick.savedSummary', {
-                      consumption: formatNumber(saved.measurement.consumption, locale),
-                      production: formatNumber(saved.measurement.production, locale),
-                      consumptionDelta: `+${formatNumber(consumedDelta, locale)}`,
-                      productionDelta: `+${formatNumber(producedDelta, locale)}`,
+                      consumption: formatNumber(
+                        saved.measurement.consumption,
+                        locale,
+                      ),
+                      production: formatNumber(
+                        saved.measurement.production,
+                        locale,
+                      ),
+                      consumptionDelta: `+${formatNumber(
+                        consumedDelta,
+                        locale,
+                      )}`,
+                      productionDelta: `+${formatNumber(
+                        producedDelta,
+                        locale,
+                      )}`,
                     })}
                   </Text>
 
@@ -278,6 +289,11 @@ export function QuickMeasureSheet({
                     min={minConsumption}
                     unit="kWh"
                     error={consumptionError}
+                    actionLabel={
+                      lastReading
+                        ? t('measurements.form.restore')
+                        : undefined
+                    }
                   />
                   <NumberField
                     label={t('measurements.form.production')}
@@ -286,16 +302,43 @@ export function QuickMeasureSheet({
                     min={minProduction}
                     unit="kWh"
                     error={productionError}
+                    actionLabel={
+                      lastReading
+                        ? t('measurements.form.restore')
+                        : undefined
+                    }
                   />
 
                   <Text variant="caption" color="textTertiary">
                     {lastReading
                       ? t('measurements.quick.lastReading', {
-                          consumption: formatNumber(lastReading.consumption, locale),
-                          production: formatNumber(lastReading.production, locale),
+                          consumption: formatNumber(
+                            lastReading.consumption,
+                            locale,
+                          ),
+                          production: formatNumber(
+                            lastReading.production,
+                            locale,
+                          ),
                         })
                       : t('measurements.quick.noLastReading')}
                   </Text>
+
+                  {unchanged ? (
+                    <Text
+                      variant="caption"
+                      color="danger"
+                      accessibilityLiveRegion="polite">
+                      {t('measurements.quick.unchanged')}
+                    </Text>
+                  ) : !valid ? (
+                    <Text
+                      variant="caption"
+                      color="danger"
+                      accessibilityLiveRegion="polite">
+                      {t('measurements.quick.invalid')}
+                    </Text>
+                  ) : null}
 
                   {error ? (
                     <Text variant="caption" color="danger">

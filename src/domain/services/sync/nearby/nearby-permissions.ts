@@ -4,13 +4,20 @@ import { injectable } from 'tsyringe';
 import {
   NearbyPermissionBlockedError,
   NearbyPermissionError,
+  NearbyPreciseLocationError,
 } from '@/domain/errors/nearby-errors';
 
 @injectable()
 export class NearbyPermissions {
   private required(): Permission[] {
     const apiLevel = Number(Platform.Version);
-    const permissions: Permission[] = [];
+    const permissions: Permission[] = [
+      // Play Services Nearby Connections checks both location permissions at
+      // runtime on every API level (statuses 8034 and 8036), so they must be
+      // requested even on Android 12+ where the docs suggest Bluetooth only.
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    ];
 
     if (apiLevel >= 31) {
       permissions.push(
@@ -22,14 +29,7 @@ export class NearbyPermissions {
       if (apiLevel >= 33) {
         permissions.push(PermissionsAndroid.PERMISSIONS.NEARBY_WIFI_DEVICES);
       }
-    } else {
-      permissions.push(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
     }
-
-    // Play Services Nearby Connections checks the coarse location permission at
-    // runtime on every API level (status 8034), so it must be requested even on
-    // Android 12+ where the docs suggest Bluetooth-only permissions.
-    permissions.push(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION);
 
     return permissions;
   }
@@ -63,8 +63,21 @@ export class NearbyPermissions {
         results[permission] !== PermissionsAndroid.RESULTS.GRANTED,
     );
 
-    if (denied) {
-      throw new NearbyPermissionError();
+    if (!denied) {
+      return;
     }
+
+    // Android 12+ lets the user grant only approximate location. Nearby
+    // Connections needs precise location, so surface a dedicated message.
+    if (
+      results[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
+        PermissionsAndroid.RESULTS.GRANTED &&
+      results[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] !==
+        PermissionsAndroid.RESULTS.GRANTED
+    ) {
+      throw new NearbyPreciseLocationError();
+    }
+
+    throw new NearbyPermissionError();
   }
 }

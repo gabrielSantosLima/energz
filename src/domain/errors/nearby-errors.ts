@@ -24,6 +24,13 @@ export class NearbyPermissionBlockedError extends NearbyError {
   }
 }
 
+export class NearbyPreciseLocationError extends NearbyError {
+  constructor(message = 'Precise location is required to find nearby devices.') {
+    super('location', message);
+    this.name = 'NearbyPreciseLocationError';
+  }
+}
+
 export class NearbyBluetoothError extends NearbyError {
   constructor(message = 'Bluetooth is turned off.') {
     super('bluetooth', message);

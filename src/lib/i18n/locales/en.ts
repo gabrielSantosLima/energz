@@ -84,6 +84,8 @@ export const en = {
       saving: 'Saving...',
       notNow: 'Not now',
       close: 'Close',
+      invalid: 'Fix the values below to save.',
+      unchanged: 'The values match the last reading. Change at least one.',
       error: 'Could not save the measurement.',
       undoError: 'Could not undo the measurement.',
       savedTitle: 'Measurement saved',
@@ -305,6 +307,8 @@ export const en = {
         permissionBlocked:
           'Bluetooth, nearby devices and location permissions are blocked. Allow them in the app settings.',
         bluetooth: 'Bluetooth is off. Turn it on and try again.',
+        location:
+          'Allow precise location (not just approximate) to find nearby devices.',
         unavailable: 'Nearby sharing is not available on this device.',
         connection: 'Could not connect to the other device.',
         peerLost: 'The other device went out of reach. Try again.',

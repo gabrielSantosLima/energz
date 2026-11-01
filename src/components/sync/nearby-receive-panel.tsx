@@ -89,7 +89,8 @@ export function NearbyReceivePanel({
   }, [onActiveChange]);
 
   const settingsAction =
-    nearby.errorCode === 'permissionBlocked'
+    nearby.errorCode === 'permissionBlocked' ||
+    nearby.errorCode === 'location'
       ? {
           label: t('sync.nearby.openSettings'),
           onPress: () => void openAppSettings(),

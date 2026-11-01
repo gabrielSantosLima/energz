@@ -84,6 +84,8 @@ export const pt = {
       saving: 'Salvando...',
       notNow: 'Agora não',
       close: 'Fechar',
+      invalid: 'Ajuste os valores abaixo para salvar.',
+      unchanged: 'Os valores são iguais à última leitura. Altere pelo menos um.',
       error: 'Não foi possível salvar a medição.',
       undoError: 'Não foi possível desfazer a medição.',
       savedTitle: 'Medição registrada',
@@ -305,6 +307,8 @@ export const pt = {
         permissionBlocked:
           'As permissões de Bluetooth, dispositivos por perto e localização estão bloqueadas. Libere nos ajustes do app.',
         bluetooth: 'O Bluetooth está desligado. Ligue e tente novamente.',
+        location:
+          'Permita a localização precisa (não apenas aproximada) para encontrar aparelhos por perto.',
         unavailable:
           'O compartilhamento por proximidade não está disponível neste aparelho.',
         connection: 'Não foi possível conectar ao outro aparelho.',
