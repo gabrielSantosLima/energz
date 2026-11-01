@@ -37,7 +37,7 @@ export default function ReportsHubScreen() {
           title={t('reports.billsTitle')}
           description={t('reports.billsDescription')}
           icon={{ ios: 'bolt', android: 'bolt', web: 'bolt' }}
-          badge={t('common.comingSoon')}
+          onPress={() => navigate('/reports/bills')}
           divider
         />
       </View>

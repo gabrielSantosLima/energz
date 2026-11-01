@@ -57,6 +57,7 @@ import { SetThemePreferenceUseCase } from '@/domain/useCases/preferences/set-the
 import { CaptureImageUseCase } from '@/domain/useCases/reports/capture-image';
 import { ExportReportImageUseCase } from '@/domain/useCases/reports/export-report-image';
 import { ExportReportPdfUseCase } from '@/domain/useCases/reports/export-report-pdf';
+import { GenerateBillReportUseCase } from '@/domain/useCases/reports/generate-bill-report';
 import { GenerateReportUseCase } from '@/domain/useCases/reports/generate-report';
 import { ApplySyncUseCase } from '@/domain/useCases/sync/apply-sync';
 import { BuildSyncEnvelopeUseCase } from '@/domain/useCases/sync/build-sync-envelope';
@@ -136,6 +137,7 @@ container.registerSingleton(GetCycleDetailUseCase);
 container.registerSingleton(DeleteCyclesUseCase);
 
 container.registerSingleton(GenerateReportUseCase);
+container.registerSingleton(GenerateBillReportUseCase);
 container.registerSingleton(CaptureImageUseCase);
 container.registerSingleton(ExportReportPdfUseCase);
 container.registerSingleton(ExportReportImageUseCase);
