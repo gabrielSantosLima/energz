@@ -82,12 +82,7 @@ function QuickMeasureForm({
         ? t('measurements.form.belowPrevious')
         : undefined;
 
-  const unchanged =
-    lastReading !== null &&
-    consumption === lastReading.consumption &&
-    production === lastReading.production;
-
-  const valid = !consumptionError && !productionError && !unchanged;
+  const valid = !consumptionError && !productionError;
   const busy = phase === 'saving';
 
   const close = () => {
@@ -324,14 +319,7 @@ function QuickMeasureForm({
                       : t('measurements.quick.noLastReading')}
                   </Text>
 
-                  {unchanged ? (
-                    <Text
-                      variant="caption"
-                      color="danger"
-                      accessibilityLiveRegion="polite">
-                      {t('measurements.quick.unchanged')}
-                    </Text>
-                  ) : !valid ? (
+                  {!valid ? (
                     <Text
                       variant="caption"
                       color="danger"

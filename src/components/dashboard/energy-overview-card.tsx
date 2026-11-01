@@ -157,48 +157,6 @@ export function EnergyOverviewCard({
         </Text>
       </View>
 
-      {onQuickAdd ? (
-        <>
-          <View style={[styles.actionDivider, { backgroundColor: colors.border }]} />
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('measurements.quick.add')}
-            onPress={onQuickAdd}
-            style={({ pressed }) => [
-              styles.action,
-              { opacity: pressed ? 0.85 : 1 },
-            ]}>
-            <View
-              style={[
-                styles.actionIcon,
-                { backgroundColor: colors.primarySoft },
-              ]}>
-              <SymbolView
-                name={{ ios: 'plus', android: 'add', web: 'add' }}
-                size={18}
-                tintColor={colors.primary}
-              />
-            </View>
-            <View style={styles.actionText}>
-              <Text variant="bodyStrong">{t('measurements.quick.add')}</Text>
-              <Text variant="caption" color="textTertiary">
-                {t('measurements.quick.addHint')}
-              </Text>
-            </View>
-            <SymbolView
-              name={{
-                ios: 'chevron.right',
-                android: 'chevron_right',
-                web: 'chevron_right',
-              }}
-              size={16}
-              tintColor={colors.textTertiary}
-            />
-          </Pressable>
-        </>
-      ) : null}
-
       {onEditLast ? (
         <>
           <View
@@ -234,6 +192,48 @@ export function EnergyOverviewCard({
               </Text>
               <Text variant="caption" color="textTertiary">
                 {t('dashboard.editLastMeasurementHint')}
+              </Text>
+            </View>
+            <SymbolView
+              name={{
+                ios: 'chevron.right',
+                android: 'chevron_right',
+                web: 'chevron_right',
+              }}
+              size={16}
+              tintColor={colors.textTertiary}
+            />
+          </Pressable>
+        </>
+      ) : null}
+
+      {onQuickAdd ? (
+        <>
+          <View style={[styles.actionDivider, { backgroundColor: colors.border }]} />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('measurements.quick.add')}
+            onPress={onQuickAdd}
+            style={({ pressed }) => [
+              styles.action,
+              { opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: colors.primarySoft },
+              ]}>
+              <SymbolView
+                name={{ ios: 'plus', android: 'add', web: 'add' }}
+                size={18}
+                tintColor={colors.primary}
+              />
+            </View>
+            <View style={styles.actionText}>
+              <Text variant="bodyStrong">{t('measurements.quick.add')}</Text>
+              <Text variant="caption" color="textTertiary">
+                {t('measurements.quick.addHint')}
               </Text>
             </View>
             <SymbolView

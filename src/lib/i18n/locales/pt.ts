@@ -88,7 +88,6 @@ export const pt = {
       notNow: 'Agora não',
       close: 'Fechar',
       invalid: 'Ajuste os valores abaixo para salvar.',
-      unchanged: 'Os valores são iguais à última leitura. Altere pelo menos um.',
       error: 'Não foi possível salvar a medição.',
       undoError: 'Não foi possível desfazer a medição.',
       savedTitle: 'Medição registrada',

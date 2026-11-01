@@ -88,7 +88,6 @@ export const en = {
       notNow: 'Not now',
       close: 'Close',
       invalid: 'Fix the values below to save.',
-      unchanged: 'The values match the last reading. Change at least one.',
       error: 'Could not save the measurement.',
       undoError: 'Could not undo the measurement.',
       savedTitle: 'Measurement saved',

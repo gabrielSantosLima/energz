@@ -190,37 +190,33 @@ export default function MeasurementsScreen() {
   const renderItem = ({ item }: { item: Measurement }) => {
     const selected = selectedIds.includes(item.id);
 
+    const noVariation = withoutVariationIds.has(item.id);
+
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityHint={
+          noVariation ? t('measurements.noVariation') : undefined
+        }
         onPress={() => (selecting ? toggle(item.id) : openMeasurement(item.id))}
         onLongPress={() => startSelection(item.id)}
         delayLongPress={250}
         style={[
           styles.row,
           {
-            backgroundColor: colors.surface,
-            borderColor: selected ? colors.primary : colors.border,
+            backgroundColor: noVariation
+              ? colors.accentSoft
+              : colors.surface,
+            borderColor: selected
+              ? colors.primary
+              : noVariation
+                ? colors.warning
+                : colors.border,
           },
         ]}>
         <View style={styles.rowHeader}>
           <Text variant="subtitle">{formatDate(item.measuredAt, locale)}</Text>
           <View style={styles.rowHeaderRight}>
-            {withoutVariationIds.has(item.id) ? (
-              <View
-                accessible
-                accessibilityLabel={t('measurements.noVariation')}>
-                <SymbolView
-                  name={{
-                    ios: 'questionmark.circle.fill',
-                    android: 'help',
-                    web: 'help',
-                  }}
-                  size={18}
-                  tintColor={colors.warning}
-                />
-              </View>
-            ) : null}
             {selecting ? (
               <View
                 style={[
