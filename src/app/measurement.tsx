@@ -11,9 +11,9 @@ import {
   View,
 } from 'react-native';
 
+import { MeasurementValueFields } from '@/components/measurements/measurement-value-fields';
 import { Button } from '@/components/ui/button';
 import { DateField } from '@/components/ui/date-field';
-import { NumberField } from '@/components/ui/number-field';
 import { Screen } from '@/components/ui/screen';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
@@ -159,100 +159,115 @@ function MeasurementForm({
         contentContainerStyle={styles.form}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <DateField
-          label={t('measurements.form.date')}
-          value={date}
-          onChange={setDate}
-        />
-
-        {consumptionNoVariation || productionNoVariation ? (
-          <View
-            style={[
-              styles.variationNotice,
-              {
-                backgroundColor: colors.accentSoft,
-                borderColor: colors.warning,
-              },
-            ]}>
-            <Text variant="caption" color="warning">
-              {t('measurements.form.noVariationHint')}
-            </Text>
-            {consumptionNoVariation ? (
-              <Text variant="caption" color="warning">
-                {t('measurements.form.noVariationConsumption')}
-              </Text>
-            ) : null}
-            {productionNoVariation ? (
-              <Text variant="caption" color="warning">
-                {t('measurements.form.noVariationProduction')}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-
-        <NumberField
-          label={t('measurements.form.consumption')}
-          value={consumption}
-          onChange={setConsumption}
-          min={minConsumption}
-          unit="kWh"
-          error={consumptionError ?? undefined}
-          actionLabel={canRestore ? t('measurements.form.restore') : undefined}
-          highlight={consumptionNoVariation}
-        />
-
-        <NumberField
-          label={t('measurements.form.production')}
-          value={production}
-          onChange={setProduction}
-          min={minProduction}
-          unit="kWh"
-          error={productionError ?? undefined}
-          actionLabel={canRestore ? t('measurements.form.restore') : undefined}
-          highlight={productionNoVariation}
-        />
-
-        {!restart && previous ? (
-          <Text variant="caption" color="textTertiary">
-            {t('measurements.form.minHint', {
-              consumption: formatNumber(minConsumption, locale),
-              production: formatNumber(minProduction, locale),
-            })}
-          </Text>
-        ) : null}
-
-        <View style={styles.switchRow}>
-          <Text variant="label" color="textSecondary">
-            {t('measurements.form.endsCycle')}
-          </Text>
-          <Switch value={endsCycle} onValueChange={setEndsCycle} />
-        </View>
-
-        <View style={styles.switchBlock}>
-          <View style={styles.switchRow}>
-            <Text variant="label" color="textSecondary" style={styles.switchLabel}>
-              {t('measurements.form.restart')}
-            </Text>
-            <Switch value={restart} onValueChange={setRestart} />
-          </View>
-          <Text variant="caption" color="textTertiary">
-            {t('measurements.form.restartHint')}
-          </Text>
-        </View>
-
-        <Button
-          label={t('measurements.form.save')}
-          onPress={onSave}
-          disabled={saving || Boolean(consumptionError) || Boolean(productionError)}
-        />
-
-        {onDelete ? (
-          <Button
-            label={t('measurements.form.delete')}
-            onPress={onDeletePress}
-            variant="danger"
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
+          <DateField
+            label={t('measurements.form.date')}
+            value={date}
+            onChange={setDate}
           />
-        ) : null}
+
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          {consumptionNoVariation || productionNoVariation ? (
+            <View
+              style={[
+                styles.variationNotice,
+                {
+                  backgroundColor: colors.accentSoft,
+                  borderColor: colors.warning,
+                },
+              ]}>
+              <Text variant="caption" color="warning">
+                {t('measurements.form.noVariationHint')}
+              </Text>
+              {consumptionNoVariation ? (
+                <Text variant="caption" color="warning">
+                  {t('measurements.form.noVariationConsumption')}
+                </Text>
+              ) : null}
+              {productionNoVariation ? (
+                <Text variant="caption" color="warning">
+                  {t('measurements.form.noVariationProduction')}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          <MeasurementValueFields
+            consumption={consumption}
+            production={production}
+            onConsumptionChange={setConsumption}
+            onProductionChange={setProduction}
+            minConsumption={minConsumption}
+            minProduction={minProduction}
+            consumptionError={consumptionError}
+            productionError={productionError}
+            canRestore={canRestore}
+            highlightConsumption={consumptionNoVariation}
+            highlightProduction={productionNoVariation}
+          />
+
+          {!restart && previous ? (
+            <Text variant="caption" color="textTertiary">
+              {t('measurements.form.minHint', {
+                consumption: formatNumber(minConsumption, locale),
+                production: formatNumber(minProduction, locale),
+              })}
+            </Text>
+          ) : null}
+        </View>
+
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
+          <View style={styles.switchRow}>
+            <Text variant="label" color="textSecondary">
+              {t('measurements.form.endsCycle')}
+            </Text>
+            <Switch value={endsCycle} onValueChange={setEndsCycle} />
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          <View style={styles.switchBlock}>
+            <View style={styles.switchRow}>
+              <Text
+                variant="label"
+                color="textSecondary"
+                style={styles.switchLabel}>
+                {t('measurements.form.restart')}
+              </Text>
+              <Switch value={restart} onValueChange={setRestart} />
+            </View>
+            <Text variant="caption" color="textTertiary">
+              {t('measurements.form.restartHint')}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.actions}>
+          <Button
+            label={t('measurements.form.save')}
+            onPress={onSave}
+            disabled={
+              saving || Boolean(consumptionError) || Boolean(productionError)
+            }
+          />
+
+          {onDelete ? (
+            <Button
+              label={t('measurements.form.delete')}
+              onPress={onDeletePress}
+              variant="danger"
+            />
+          ) : null}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -346,8 +361,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   form: {
-    gap: spacing.lg,
+    gap: spacing.xl,
     paddingBottom: spacing['2xl'],
+  },
+  section: {
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing.xl,
+    gap: spacing.lg,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
   },
   variationNotice: {
     borderRadius: radius.md,
@@ -366,5 +390,8 @@ const styles = StyleSheet.create({
   switchLabel: {
     flex: 1,
     paddingRight: spacing.md,
+  },
+  actions: {
+    gap: spacing.md,
   },
 });
