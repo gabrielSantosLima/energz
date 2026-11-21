@@ -368,52 +368,54 @@ export const pt = {
       open: 'Protótipos de medição rápida',
       title: 'Medição rápida',
       subtitle:
-        'Três formas mockadas de registrar a leitura de hoje. Nada é salvo.',
+        'Formas mockadas de registrar uma leitura sem sair da tela inicial. Nada é salvo.',
       prototypeBadge: 'Protótipo · dados mockados',
       preview: 'Prévia da tela inicial',
       variants: {
-        inline: 'Cartão inline',
-        sheet: 'Bottom sheet',
-        wizard: 'Passo a passo',
+        inline: 'Original',
+        roomy: 'Espaçoso',
+        steps: 'Duas etapas',
+        summary: 'Resumo',
+        embedded: 'Dentro do resumo',
+        dock: 'Barra inferior',
       },
       variantsHint: {
         inline:
-          'Um cartão embutido no início. Sem navegação: dois campos e salvar.',
-        sheet:
-          'Um botão flutuante abre uma bottom sheet com os mesmos campos, mantendo o início visível.',
-        wizard:
-          'Um fluxo em tela cheia, um valor por etapa, alvos maiores e salvar no final.',
+          'Uma única linha discreta no fluxo da tela inicial abre os dois campos e recolhe depois de salvar.',
+        roomy:
+          'O mesmo cartão com os campos empilhados em largura total, mais respiro e uma divisória entre o cabeçalho e o formulário.',
+        steps:
+          'Um campo de largura total por etapa dentro do mesmo cartão, com barra de progresso e bastante espaço.',
+        summary:
+          'Mostra a última leitura em destaque e só troca para os campos empilhados quando você pede para atualizar.',
+        embedded:
+          'A linha de adicionar que já existe no cartão de resumo vira o formulário, sem criar outra superfície.',
+        dock:
+          'Uma barra compacta fixada acima da barra de abas expande para cima, sem fundo escurecido e sem bloquear a tela.',
       },
-      inlineTitle: 'Leitura rápida',
-      inlineHint: 'Baseada na última leitura. A data é sempre hoje.',
+      logTitle: 'Registrar leitura de hoje',
+      logHint: 'Preenchido com a última leitura',
+      formTitle: 'Leitura de hoje',
       today: 'Hoje, {{date}}',
       lastReading: 'Última leitura: {{consumption}} · {{production}} kWh',
+      lastReadingTitle: 'Última leitura',
+      update: 'Atualizar leitura',
       consumption: 'Consumo',
       production: 'Produção',
       save: 'Salvar medição',
       saving: 'Salvando...',
-      savedTitle: 'Medição registrada',
-      savedAt: 'Registrada às {{time}}',
+      continue: 'Continuar',
+      stepProgress: 'Etapa {{current}} de {{total}}',
+      belowLast: 'Os valores devem ser pelo menos a última leitura.',
+      savedAt: 'Salva às {{time}}',
       savedSummary:
         'Consumo {{consumption}} ({{consumptionDelta}}) · Produção {{production}} ({{productionDelta}}) kWh',
       undo: 'Desfazer',
-      newReading: 'Nova leitura',
       close: 'Fechar',
-      fab: 'Medição rápida',
-      sheetHint:
-        'O botão flutuante fica acima da barra de navegação. Toque para abrir a sheet.',
-      sheetTitle: 'Nova medição',
-      delta: '{{consumption}} / {{production}} kWh desde a última leitura',
-      notNow: 'Agora não',
-      continue: 'Continuar',
-      step: 'Passo {{current}} de {{total}}',
-      ctaTitle: 'Leitura de hoje',
-      ctaHint: 'Um fluxo focado em duas etapas.',
-      register: 'Registrar',
-      decrease: 'Diminuir em {{value}}',
-      increase: 'Aumentar em {{value}}',
-      wizardHint:
-        'Protótipo: a versão final abre o teclado para valores exatos.',
+      embeddedHint: 'Este gatilho já existe dentro do cartão de resumo.',
+      dockHint: 'Fixada acima da barra de navegação',
+      dockStageHint:
+        'A barra fica acima da barra de navegação e expande no mesmo lugar.',
     },
   },
   billScan: {

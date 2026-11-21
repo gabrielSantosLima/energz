@@ -11,6 +11,7 @@ import { PROTOTYPE_LAST_READING } from './use-quick-measure-mock';
 
 type Props = {
   children?: ReactNode;
+  overviewFooter?: ReactNode;
   overlay?: ReactNode;
 };
 
@@ -39,7 +40,7 @@ function Metric({
  * Fake dashboard used to show each prototype in context. It is intentionally
  * static and lives only inside the dev prototype screen.
  */
-export function PrototypeStage({ children, overlay }: Props) {
+export function PrototypeStage({ children, overviewFooter, overlay }: Props) {
   const { colors } = useTheme();
   const { t, locale } = useTranslation();
 
@@ -72,16 +73,25 @@ export function PrototypeStage({ children, overlay }: Props) {
           styles.overview,
           { backgroundColor: colors.surface, borderColor: colors.border },
         ]}>
-        <Metric
-          label={t('dashboard.consumption')}
-          value={formatNumber(PROTOTYPE_LAST_READING.consumption, locale)}
-          color={colors.primary}
-        />
-        <Metric
-          label={t('dashboard.production')}
-          value={formatNumber(PROTOTYPE_LAST_READING.production, locale)}
-          color={colors.accent}
-        />
+        <View style={styles.metricsRow}>
+          <Metric
+            label={t('dashboard.consumption')}
+            value={formatNumber(PROTOTYPE_LAST_READING.consumption, locale, 0)}
+            color={colors.primary}
+          />
+          <Metric
+            label={t('dashboard.production')}
+            value={formatNumber(PROTOTYPE_LAST_READING.production, locale, 0)}
+            color={colors.accent}
+          />
+        </View>
+
+        {overviewFooter ? (
+          <View
+            style={[styles.overviewFooter, { borderTopColor: colors.border }]}>
+            {overviewFooter}
+          </View>
+        ) : null}
       </View>
 
       {children}
@@ -116,8 +126,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: spacing.md,
+    gap: spacing.md,
+  },
+  metricsRow: {
     flexDirection: 'row',
     gap: spacing.xl,
   },
   metric: { flex: 1, gap: spacing.xs },
+  overviewFooter: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: spacing.md,
+  },
 });

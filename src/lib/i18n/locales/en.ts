@@ -366,52 +366,54 @@ export const en = {
     quickMeasure: {
       open: 'Quick measurement prototypes',
       title: 'Quick measurement',
-      subtitle: 'Three mocked ways to log today’s reading. Nothing is saved.',
+      subtitle:
+        'Mocked ways to log a reading without leaving the dashboard. Nothing is saved.',
       prototypeBadge: 'Prototype · mock data',
       preview: 'Home preview',
       variants: {
-        inline: 'Inline card',
-        sheet: 'Bottom sheet',
-        wizard: 'Step by step',
+        inline: 'Original',
+        roomy: 'Roomy',
+        steps: 'Two steps',
+        summary: 'Summary',
+        embedded: 'Inside overview',
+        dock: 'Bottom dock',
       },
       variantsHint: {
         inline:
-          'A card embedded in the dashboard. No navigation: two fields and save.',
-        sheet:
-          'A floating button opens a bottom sheet with the same fields while the dashboard stays visible.',
-        wizard:
-          'A full screen flow with one value per step, bigger targets and save at the end.',
+          'One quiet row in the dashboard flow expands into the two fields and collapses again after saving.',
+        roomy:
+          'The same card with stacked full-width fields, extra padding and a divider between header and form.',
+        steps:
+          'One full-width field per step inside the same card, with a progress bar and plenty of breathing room.',
+        summary:
+          'Shows the last reading in large type and swaps into stacked fields only when asked.',
+        embedded:
+          'The existing add row inside the overview card becomes the form, so no extra surface is added.',
+        dock:
+          'A compact bar pinned above the tab bar expands upward, without a backdrop or blocking the dashboard.',
       },
-      inlineTitle: 'Quick reading',
-      inlineHint: 'Based on the last reading. Date is always today.',
+      logTitle: 'Log today’s reading',
+      logHint: 'Prefilled from the last reading',
+      formTitle: 'Today’s reading',
       today: 'Today, {{date}}',
       lastReading: 'Last reading: {{consumption}} · {{production}} kWh',
+      lastReadingTitle: 'Last reading',
+      update: 'Update reading',
       consumption: 'Consumption',
       production: 'Production',
       save: 'Save measurement',
       saving: 'Saving...',
-      savedTitle: 'Measurement saved',
-      savedAt: 'Registered at {{time}}',
+      continue: 'Continue',
+      stepProgress: 'Step {{current}} of {{total}}',
+      belowLast: 'Values must be at least the last reading.',
+      savedAt: 'Saved at {{time}}',
       savedSummary:
         'Consumption {{consumption}} ({{consumptionDelta}}) · Production {{production}} ({{productionDelta}}) kWh',
       undo: 'Undo',
-      newReading: 'New reading',
       close: 'Close',
-      fab: 'Quick measurement',
-      sheetHint:
-        'The floating button stays above the navigation bar. Tap it to open the sheet.',
-      sheetTitle: 'New measurement',
-      delta: '{{consumption}} / {{production}} kWh since the last reading',
-      notNow: 'Not now',
-      continue: 'Continue',
-      step: 'Step {{current}} of {{total}}',
-      ctaTitle: 'Today’s reading',
-      ctaHint: 'A focused flow in two steps.',
-      register: 'Register',
-      decrease: 'Decrease by {{value}}',
-      increase: 'Increase by {{value}}',
-      wizardHint:
-        'Prototype: the final version opens the keypad for exact values.',
+      embeddedHint: 'This trigger already exists inside the overview card.',
+      dockHint: 'Pinned above the tab bar',
+      dockStageHint: 'The dock stays above the tab bar and expands in place.',
     },
   },
   billScan: {
