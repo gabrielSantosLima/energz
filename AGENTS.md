@@ -126,6 +126,19 @@ npx expo install --fix      # fix incompatible package versions
 
 Run lint and typecheck before declaring any task done.
 
+## Development builds
+
+- Start and build the Android development environment with
+  `bash scripts/dev.sh`. It configures JDK 21 and the Android SDK, starts Metro
+  if needed, installs the debug app and opens it through `adb reverse`.
+- After a JS-only change, reload without a native build:
+  `bash scripts/dev.sh --reload`.
+- Use `bash scripts/dev.sh --clear` when the Metro cache is stale or a bundle
+  hangs.
+- Always use the debug build for testing. Release builds cannot load the bundle
+  from Metro.
+- Do not hand off a change that has only been typechecked or linted.
+
 ## Navigation & Routing
 
 - Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
