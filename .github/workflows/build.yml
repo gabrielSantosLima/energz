@@ -47,6 +47,10 @@ jobs:
       - name: Generate native project
         run: npx expo prebuild --platform android --no-install
 
+      - name: Configure Gradle memory
+        run: |
+          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m/' android/gradle.properties
+
       - name: Build APK
         working-directory: android
         run: |
