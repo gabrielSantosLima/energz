@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/hooks/use-theme';
@@ -12,9 +18,16 @@ type Props = {
   scroll?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
+  keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
 };
 
-export function Screen({ children, scroll = false, refreshing, onRefresh }: Props) {
+export function Screen({
+  children,
+  scroll = false,
+  refreshing,
+  onRefresh,
+  keyboardShouldPersistTaps,
+}: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -30,6 +43,7 @@ export function Screen({ children, scroll = false, refreshing, onRefresh }: Prop
         style={[styles.flex, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.grow, padding]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         refreshControl={
           onRefresh ? (
             <RefreshControl

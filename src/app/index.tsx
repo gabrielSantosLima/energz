@@ -10,9 +10,9 @@ import { CycleChart } from '@/components/dashboard/cycle-chart';
 import { EnergyOverviewCard } from '@/components/dashboard/energy-overview-card';
 import { EnergyOverviewCardSkeleton } from '@/components/dashboard/energy-overview-card-skeleton';
 import {
-  QuickMeasureSheet,
+  QuickMeasureCard,
   type QuickMeasurementInput,
-} from '@/components/measurements/quick-measure-sheet';
+} from '@/components/measurements/quick-measure-card';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
@@ -223,7 +223,11 @@ export default function DashboardScreen() {
   }
 
   return (
-    <Screen scroll refreshing={refreshing} onRefresh={refresh}>
+    <Screen
+      scroll
+      refreshing={refreshing}
+      onRefresh={refresh}
+      keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <Pressable
           accessibilityRole="imagebutton"
@@ -286,6 +290,16 @@ export default function DashboardScreen() {
           />
         </View>
       )}
+
+      {quickOpen ? (
+        <View style={styles.quickCard}>
+          <QuickMeasureCard
+            lastReading={lastReading}
+            onClose={() => setQuickOpen(false)}
+            onSubmit={handleQuickSubmit}
+          />
+        </View>
+      ) : null}
 
       {!loading && cycles.length === 0 ? (
         <View
@@ -400,13 +414,6 @@ export default function DashboardScreen() {
         cycle={selected}
         measurements={measurements}
       />
-
-      <QuickMeasureSheet
-        visible={quickOpen}
-        lastReading={lastReading}
-        onClose={() => setQuickOpen(false)}
-        onSubmit={handleQuickSubmit}
-      />
     </Screen>
   );
 }
@@ -429,6 +436,9 @@ const styles = StyleSheet.create({
   metricsRow: {
     flexDirection: 'column',
     gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  quickCard: {
     marginBottom: spacing.xl,
   },
   emptyCard: {
